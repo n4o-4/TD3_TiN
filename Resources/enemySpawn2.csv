@@ -1,0 +1,5 @@
+//?R?}???h,x,y,z,hp,number,type
+// Wave2,,,,,,
+POP,400,20,-350,4,12,KUMO
+POP,-350,5,400,4,10,BOMB
+POP,100,25,-150,4,6,CHAIR

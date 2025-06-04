@@ -1,0 +1,22 @@
+# Blender 4.4.1 MTL File: 'None'
+# www.blender.org
+
+newmtl m_001f246d-196b-b9bd-26c4-22b9969e0eb9.001
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd C:/Users/PARK YIJUN/Desktop/TD4/Resources/player/Microwave.png
+
+newmtl m_5d0ffce8-883c-753c-2ce0-25b8eef3ceea.001
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd scene/Microwave.png

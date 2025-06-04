@@ -1,0 +1,5 @@
+//?R?}???h,x,y,z,hp,number,type
+// Wave1,,,,,,
+POP,-450,20,480,4,15,KUMO
+POP,380,10,-480,4,12,BOMB
+POP,-150,25,200,4,7,BAT

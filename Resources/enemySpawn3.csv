@@ -1,0 +1,6 @@
+//?R?}???h,x,y,z,hp,number,type
+// Wave3,,,,,,
+POP,0,10,0,5,10,KUMO
+POP,450,15,-100,5,9,BOMB
+POP,-450,5,450,5,9,BAT
+POP,200,10,300,5,6,WM
