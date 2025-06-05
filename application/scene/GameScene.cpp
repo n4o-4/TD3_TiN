@@ -303,10 +303,7 @@ void GameScene::Finalize() {
 ///=============================================================================
 ///						更新
 void GameScene::Update() {
-	/*animationManager->Update();
-	lineDrawer_->SkeletonUpdate(animationManager->GetActiveAnimation("walk.gltf").skeleton);*/
-	// human_->Update();
-
+	
 	BaseScene::Update();
 	//========================================
 	// フェーズ切り替え
@@ -537,12 +534,7 @@ void GameScene::Update() {
 
 			lockOnSystem_->DetectEnemiesRaw(allTargets);
 			lockOnSystem_->UpdateRaw(allTargets);
-			//// 敵の検出
-			// lockOnSystem_->DetectEnemies(enemies_);
-			// lockOnSystem_->DetectEnemies(spawns_);
-			//// ロックオン更新
-			// lockOnSystem_->Update(enemies_);
-			// lockOnSystem_->Update(spawns_);
+			
 		}
 
 		//---------------------------------------
@@ -625,10 +617,6 @@ void GameScene::Update() {
 			}
 		}
 
-		////---------------------------------------
-		//// プレイヤーの更新
-		//player_->Update();
-
 		//---------------------------------------
 		// 天球
 		skyDome_->Update();
@@ -694,8 +682,6 @@ void GameScene::Update() {
 
 		break;
 	}
-
-	// lineDrawer_->Update();
 
 	//========================================
 	// ライト
@@ -872,15 +858,7 @@ void GameScene::Draw() {
 					  *directionalLight.get(),
 					  *pointLight.get(),
 					  *spotLight.get());
-		//========================================
-		// LockOn
-		// 🔽 LockOnの描画処理を追加
-		// if(lockOnSystem_) {
-		//	lockOnSystem_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-		//		*directionalLight.get(),
-		//		*pointLight.get(),
-		//		*spotLight.get());
-		//}
+		
 		//========================================
 		// 当たり判定マネージャ
 		collisionManager_->Draw();
@@ -1005,15 +983,7 @@ void GameScene::Draw() {
 			*directionalLight.get(),
 			*pointLight.get(),
 			*spotLight.get());
-		//========================================
-		// LockOn
-		// 🔽 LockOnの描画処理を追加
-		// if(lockOnSystem_) {
-		//	lockOnSystem_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-		//		*directionalLight.get(),
-		//		*pointLight.get(),
-		//		*spotLight.get());
-		//}
+		
 		//========================================
 		// 当たり判定マネージャ
 		collisionManager_->Draw();
