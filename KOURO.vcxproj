@@ -62,10 +62,10 @@
     <ClCompile Include="externals\MagEngine\Line\Line.cpp" />
     <ClCompile Include="externals\MagEngine\Line\LineManager.cpp" />
     <ClCompile Include="externals\MagEngine\Line\LineSetup.cpp" />
-    <ClCompile Include="GroundTypeEnemy3.cpp" />
-    <ClCompile Include="Gritch.cpp" />
-    <ClCompile Include="GroundTypeEnemy4.cpp" />
-    <ClCompile Include="Hud.cpp" />
+    <ClCompile Include="application\object\GroundTypeEnemy3.cpp" />
+    <ClCompile Include="engine\effect\Gritch.cpp" />
+    <ClCompile Include="application\object\GroundTypeEnemy4.cpp" />
+    <ClCompile Include="application\object\Hud.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -95,8 +95,8 @@
     <ClCompile Include="application\object\Spawn.cpp" />
     <ClCompile Include="engine\effect\Vignette.cpp" />
     <ClCompile Include="engine\effect\MotionBlur.cpp" />
-    <ClCompile Include="TutorialEnemy.cpp" />
-    <ClCompile Include="TutorialScene.cpp" />
+    <ClCompile Include="application\object\TutorialEnemy.cpp" />
+    <ClCompile Include="application\scene\TutorialScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\collision\BaseObject.h" />
@@ -186,12 +186,12 @@
     <ClInclude Include="externals\MagEngine\Line\Line.h" />
     <ClInclude Include="externals\MagEngine\Line\LineManager.h" />
     <ClInclude Include="externals\MagEngine\Line\LineSetup.h" />
-    <ClInclude Include="GroundTypeEnemy3.h" />
-    <ClInclude Include="Gritch.h" />
-    <ClInclude Include="GroundTypeEnemy4.h" />
-    <ClInclude Include="Hud.h" />
-    <ClInclude Include="TutorialEnemy.h" />
-    <ClInclude Include="TutorialScene.h" />
+    <ClInclude Include="application\object\GroundTypeEnemy3.h" />
+    <ClInclude Include="engine\effect\Gritch.h" />
+    <ClInclude Include="application\object\GroundTypeEnemy4.h" />
+    <ClInclude Include="application\object\Hud.h" />
+    <ClInclude Include="application\object\TutorialEnemy.h" />
+    <ClInclude Include="application\scene\TutorialScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

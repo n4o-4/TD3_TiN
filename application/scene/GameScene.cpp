@@ -144,18 +144,7 @@ void GameScene::Initialize() {
 
 	player_->SetFollowCamera(cameraManager_->GetFollowCamera());
 
-	// sceneManager_->GetPostEffect()->ApplyEffect(PostEffect::EffectType::Grayscale); //完
-	// sceneManager_->GetPostEffect()->ApplyEffect(PostEffect::EffectType::Vignette); //完
-	// sceneManager_->GetPostEffect()->ApplyEffect(PostEffect::EffectType::BoxFilter); //完
-	// sceneManager_->GetPostEffect()->ApplyEffect(PostEffect::EffectType::GaussianFilter); //完
-	// sceneManager_->GetPostEffect()->ApplyEffect(PostEffect::EffectType::LuminanceBasedOutline); //完
-	//sceneManager_->GetPostEffect()->ApplyEffect("Outline", PostEffect::EffectType::DepthBasedOutline); // 完
-	// sceneManager_->GetPostEffect()->ApplyEffect(PostEffect::EffectType::RadialBlur); //完
-	// sceneManager_->GetPostEffect()->ApplyEffect("dissolve",PostEffect::EffectType::Dissolve); //完
-	// sceneManager_->GetPostEffect()->ApplyEffect(PostEffect::EffectType::Random); //完
-	//sceneManager_->GetPostEffect()->ApplyEffect("fog",PostEffect::EffectType::LinearFog); //完
 	sceneManager_->GetPostEffect()->ApplyEffect("Blur", PostEffect::EffectType::MotionBlur);
-	// sceneManager_->GetPostEffect()->ApplyEffect("Grtich",PostEffect::EffectType::Gritch); //完
 
 	dissolve_ = dynamic_cast<Dissolve *>(sceneManager_->GetPostEffect()->GetEffectData("dissolve"));
 	blur_ = dynamic_cast<MotionBlur *>(sceneManager_->GetPostEffect()->GetEffectData("Blur"));
@@ -166,21 +155,6 @@ void GameScene::Initialize() {
 	lineDrawer_->Initialize(sceneManager_->GetDxCommon(), sceneManager_->GetSrvManager());
 
 	lineDrawer_->CreateLineObject(LineDrawerBase::Type::Grid, nullptr);
-
-	/*///========================================
-	/// アニメーションマネージャ
-	animationManager = std::make_unique<AnimationManager>();
-	animationManager->LoadAnimationFile("./Resources/human", "walk.gltf");
-	animationManager->StartAnimation("walk.gltf", 0);
-	animationManager->Update();
-	lineDrawer_->CreateSkeletonObject(animationManager->GetActiveAnimation("walk.gltf").skeleton,nullptr);*/
-
-	/// LoadModelでエラー発生中
-	/*ModelManager::GetInstance()->LoadModel("human/wlak.gltf");	///
-
-	human_ = std::make_unique<Object3d>();
-	human_->Initialize(Object3dCommon::GetInstance());
-	human_->SetModel(ModelManager::GetInstance()->FindModel("human/wlak.gltf"));*/
 
 	//BGM
 	AudioManager::GetInstance()->Initialize();
