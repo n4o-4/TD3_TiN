@@ -18,44 +18,6 @@ void ShowMatrix4x4(const Matrix4x4 &matrix, const char *label) {
 	}
 }
 
-struct GradientPoint {
-	float position; // 0.0～1.0の範囲
-	ImVec4 color;	// 色
-};
-
-std::vector<GradientPoint> gradientPoints = {
-	{0.0f, ImVec4(1.0f, 0.0f, 0.0f, 1.0f)}, // 赤
-	{1.0f, ImVec4(0.0f, 0.0f, 1.0f, 1.0f)}	// 青
-};
-
-void ShowGradientEditor() {
-	ImGui::Text("Gradient Editor");
-
-	// 制御点の編集
-	for (size_t i = 0; i < gradientPoints.size(); ++i) {
-		ImGui::PushID(static_cast<int>(i));
-		ImGui::DragFloat("Position", &gradientPoints[i].position, 0.01f, 0.0f, 1.0f);
-		ImGui::ColorEdit4("Color", (float *)&gradientPoints[i].color);
-		ImGui::PopID();
-	}
-
-	// グラデーションのプレビュー
-	ImDrawList *drawList = ImGui::GetWindowDrawList();
-	ImVec2 canvasPos = ImGui::GetCursorScreenPos();
-	ImVec2 canvasSize = ImVec2(300, 50); // プレビューのサイズ
-	drawList->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(50, 50, 50, 255));
-
-	for (size_t i = 0; i + 1 < gradientPoints.size(); ++i) {
-		ImVec2 start = ImVec2(canvasPos.x + gradientPoints[i].position * canvasSize.x, canvasPos.y);
-		ImVec2 end = ImVec2(canvasPos.x + gradientPoints[i + 1].position * canvasSize.x, canvasPos.y + canvasSize.y);
-		ImU32 colStart = ImGui::ColorConvertFloat4ToU32(gradientPoints[i].color);
-		ImU32 colEnd = ImGui::ColorConvertFloat4ToU32(gradientPoints[i + 1].color);
-		drawList->AddRectFilledMultiColor(start, end, colStart, colEnd, colEnd, colStart);
-	}
-
-	ImGui::Dummy(canvasSize); // スペースを確保
-}
-
 ///=============================================================================
 ///						初期化
 void GameScene::Initialize() {
