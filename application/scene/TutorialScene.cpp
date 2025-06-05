@@ -48,15 +48,6 @@ void TutorialScene::Initialize()
 
 	B_select->Update();
 
-	//========================================
-	// checkBoxのスプライトを生成
-	//checkBox0_ = std::make_unique<Sprite>();
-	//checkBox0_->Initialize(SpriteCommon::GetInstance(),"Resources/CheckBox.png");
-	//checkBox0_->SetPosition({ 880.0f, 160.0f });
-	//checkBox0_->SetTexSize({ 128.0f, 128.0f });   // テクスチャの描画範囲
-	//checkBox0_->SetSize({ 48.0f, 48.0f });        // 描画サイズ
-
-
 	for (int i = 0; i < 6; ++i) {
 		checkBox_[i] = std::make_unique<Sprite>();
 		checkBox_[i]->Initialize(SpriteCommon::GetInstance(), "Resources/CheckBox.png");
@@ -138,14 +129,6 @@ void TutorialScene::Initialize()
 	// 敵とスポーンの情報を最新に保つ
 	hud_->SetEnemiesAndSpawns(&enemies_, &spawns_);
 	hud_->Initialize(cameraManager_->GetFollowCamera(), player_.get(), lockOnSystem_.get());
-
-	//========================================
-	// Enemy
-	//auto groundEnemy = std::make_unique<GroundTypeEnemy>();
-	//groundEnemy->Initialize();
-	//groundEnemy->SetPosition({ 0.0f, 0.0f, 0.0f }); // 好きな座標に配置
-	//groundEnemy->SetTarget(player_->GetWorldTransform());
-	//enemies_.push_back(std::move(groundEnemy));
 
 	tutorialPhase_ = TutorialPhase::kExplain;
 
@@ -261,12 +244,6 @@ void TutorialScene::Update()
 
 			lockOnSystem_->DetectEnemiesRaw(allTargets);
 			lockOnSystem_->UpdateRaw(allTargets);
-			//// 敵の検出
-			// lockOnSystem_->DetectEnemies(enemies_);
-			// lockOnSystem_->DetectEnemies(spawns_);
-			//// ロックオン更新
-			// lockOnSystem_->Update(enemies_);
-			// lockOnSystem_->Update(spawns_);
 		}
 
 
@@ -275,14 +252,6 @@ void TutorialScene::Update()
 		// リセット
 		collisionManager_->Reset();
 
-		//// エネミー
-		//for (auto& enemy : enemies_) {
-		//	collisionManager_->AddCollider(enemy.get());
-		//	// エネミーの弾リスト
-		//	for (auto& bullet : enemy->GetBullets()) {
-		//		collisionManager_->AddCollider(bullet.get());
-		//	}
-		//}
 		// spwan
 		for (auto& spawn : spawns_) {
 			collisionManager_->AddCollider(spawn.get());
@@ -299,11 +268,6 @@ void TutorialScene::Update()
 		}
 		// 更新
 		collisionManager_->Update();
-
-		//---------------------------------------
-		// HUD
-		/*hud_->SetEnemiesAndSpawns(&enemies_, &spawns_);
-		hud_->Update();*/
 
 		//---------------------------------------
 		// パーティクル
@@ -346,10 +310,6 @@ void TutorialScene::Update()
 				}
 			}
 
-			// プレイヤーの操作説明
-			/*if (Input::GetInstance()->Triggerkey(DIK_RETURN)) {
-				tutorialPhase_ = TutorialPhase::kPlay;
-			}*/
 			break;
 		// プレイフェーズ
 		case TutorialPhase::kPlay:
@@ -499,11 +459,6 @@ void TutorialScene::Update()
 		ImGui::TreePop();
 	}
 
-	//ImGui::Checkbox("useDebugCamera", &cameraManager_->useDebugCamera_);
-	//ImGui::Checkbox("sceneConticue", &isContinue);
-
-	//hud_->DrawImGui();
-
 #endif
 
 }
@@ -587,15 +542,7 @@ void TutorialScene::Draw()
 			*directionalLight.get(),
 			*pointLight.get(),
 			*spotLight.get());
-		//========================================
-		// LockOn
-		// 🔽 LockOnの描画処理を追加
-		// if(lockOnSystem_) {
-		//	lockOnSystem_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-		//		*directionalLight.get(),
-		//		*pointLight.get(),
-		//		*spotLight.get());
-		//}
+		
 		//========================================
 		// 当たり判定マネージャ
 		collisionManager_->Draw();
