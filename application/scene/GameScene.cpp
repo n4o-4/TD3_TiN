@@ -267,383 +267,14 @@ void GameScene::Finalize() {
 void GameScene::Update() {
 	
 	BaseScene::Update();
+
 	//========================================
-	// フェーズ切り替え
-	switch (phase_) {
-		///=============================================================================
-		// フェードイン
-	case Phase::kFadeIn:
-
-		if (fade_->IsFinished()) {
-
-			phase_ = Phase::kPlay;
-
-			// 入力の受付をオンに
-			Input::GetInstance()->SetIsReception(true);
-		}
-
-		//---------------------------------------
-		// プレイヤーの更新
-		player_->Update();
-		//---------------------------------------
-		// 天球
-		skyDome_->Update();
-		//---------------------------------------
-		// 地面
-		ground_->Update();
-
-		///=============================================================================
-		// ゲームプレイ
-		break;
-	case Phase::kPlay:
-
-		//---------------------------------------
-		// ゲームのクリア条件
-		// クリアの場合
-		// TODO: クリア条件を設定
-		if (false) {
-			isGameClear_ = true;
-			isContinue_ = false;
-		}
-		// ゲームオーバーの場合
-		if (player_->GetHp() <= 0) {
-			isGameOver_ = true;
-			isContinue_ = false;
-		}
-		// リセット
-		if (Input::GetInstance()->Triggerkey(DIK_R)) {
-			isContinue_ = false;
-		}
-		if (!isContinue_) {
-			phase_ = Phase::kFadeOut;
-			fade_->Start(Fade::Status::FadeOut, fadeTime_);
-		}
-		if (isGameClear_) {
-			phase_ = Phase::kFadeOut;
-			fade_->Start(Fade::Status::FadeOut, fadeTime_);
-		}
-
-		//---------------------------------------
-		// プレイヤーの更新
-		//player_->Update();
-		if (waveDisplayTimer_ <= 0) {
-			player_->Update(); 
-			cameraManager_->GetFollowCamera()->enableUpdate_ = true;
-		} else {
-			player_->StopMachineGunSound();
-			cameraManager_->GetFollowCamera()->enableUpdate_ = false;
-		}
-
-		//---------------------------------------
-		// 天球
-		skyDome_->Update();
-
-		//---------------------------------------
-		// 地面
-		ground_->Update();
-
-		//---------------------------------------
-		// 敵出現
-		UpdateEnemyPopCommands();
-		// spawnの更新
-		for (const auto &Spawn : spawns_) {
-			Spawn->Update();
-		}
-		// Spawn
-		spawns_.erase(
-			std::remove_if(spawns_.begin(), spawns_.end(),
-						   [this](const std::unique_ptr<BaseEnemy> &spawn) {
-							   if (spawn->GetSpawnHp() <= 0) {
-								   // ロックオンシステムから敵を削除
-								   if (lockOnSystem_) {
-									   lockOnSystem_->RemoveLockedEnemy(spawn.get());
-								   }
-
-								   // 削除したエネミーをターゲットに持つプレイヤーのミサイルのターゲットをnullptrに設定
-								   for (auto it = player_->GetBullets().begin(); it != player_->GetBullets().end(); ++it) {
-
-									   if (it->get()->GetTarget() == spawn.get()) {
-										   it->get()->SetTarget(nullptr);
-									   }
-								   }
-								   return true;
-							   }
-							   return false;
-						   }),
-			spawns_.end());
-		if (spawns_.empty() && waveReady_) {
-			player_->StopMachineGunSound();
-			enemies_.clear();
-
-			waveIndex_++;
-			if (easy_) {
-				
-				if (waveIndex_ < EwaveCsvPaths_.size()) {
-
-					currentWaveImageIndex_ = waveIndex_ + 1;
-					waveDisplayTimer_ = waveDisplayDuration_;
-
-					player_->GetBullets().clear();
-					player_->GetMachineGunBullets().clear();
-					player_->StopMachineGunSound();
-
-					LoadEnemyPopData(waveIndex_);
-					waveReady_ = false;
-				} else {
-					player_->GetBullets().clear();
-					player_->GetMachineGunBullets().clear();
-					player_->StopMachineGunSound();
-					isGameClear_ = true;
-				}
-			} else if (nomal_) {
-				if (waveIndex_ < NwaveCsvPaths_.size()) {
-
-					currentWaveImageIndex_ = waveIndex_ + 1;
-					waveDisplayTimer_ = waveDisplayDuration_;
-
-					player_->GetBullets().clear();
-					player_->GetMachineGunBullets().clear();
-					player_->StopMachineGunSound();
-
-					LoadEnemyPopData(waveIndex_);
-					waveReady_ = false;
-				} else {
-					player_->GetBullets().clear();
-					player_->GetMachineGunBullets().clear();
-					player_->StopMachineGunSound();
-					isGameClear_ = true;
-				}
-			} else if (hard_) {
-				if (waveIndex_ < HwaveCsvPaths_.size()) {
-
-					currentWaveImageIndex_ = waveIndex_ + 1;
-					waveDisplayTimer_ = waveDisplayDuration_;
-
-					player_->GetBullets().clear();
-					player_->GetMachineGunBullets().clear();
-					player_->StopMachineGunSound();
-
-					LoadEnemyPopData(waveIndex_);
-					waveReady_ = false;
-				} else {
-					player_->GetBullets().clear();
-					player_->GetMachineGunBullets().clear();
-					player_->StopMachineGunSound();
-					isGameClear_ = true;
-				}
-			}
-		}
-		// 敵リスト
-		for (const auto &enemy : enemies_) {
-			enemy->Update();
-		}
-		{
-			std::vector<BaseEnemy *> allEnemies;
-			for (const auto &e : enemies_) {
-				allEnemies.push_back(e.get());
-			}
-			for (const auto &s : spawns_) {
-				allEnemies.push_back(s.get());
-			}
-			AvoidOverlap(allEnemies, 4.0f);
-		}
-		// 敵の削除
-		enemies_.erase(
-			// 削除条件
-			std::remove_if(enemies_.begin(), enemies_.end(),
-						   [this](const std::unique_ptr<BaseEnemy> &enemy) {
-							   // HPが0以下の場合
-							   if (enemy->GetHp() <= 0) {
-								   // ロックオンシステムから敵を削除
-								   if (lockOnSystem_) {
-									   lockOnSystem_->RemoveLockedEnemy(enemy.get());
-								   }
-
-								   // 削除したエネミーをターゲットに持つプレイヤーのミサイルのターゲットをnullptrに設定
-								   for (auto it = player_->GetBullets().begin(); it != player_->GetBullets().end(); ++it) {
-
-									   if (it->get()->GetTarget() == enemy.get()) {
-										   it->get()->SetTarget(nullptr);
-									   }
-								   }
-
-								   return true; // 削除する
-							   }
-							   return false; // 削除しない
-						   }),
-			// 実際に削除する
-			enemies_.end());
-
-		//---------------------------------------
-		// ロックオンの処理追加
-		if (lockOnSystem_) {
-			// プレイヤーの位置をロックオンシステムにセット
-			lockOnSystem_->SetPosition(player_->GetPosition());
-
-			// カメラがFollowCameraの場合、視点方向を設定
-			auto activeCamera = cameraManager_->GetActiveCamera();
-			if (auto followCamera = dynamic_cast<FollowCamera *>(activeCamera)) {
-				// カメラからの視点方向をロックオンシステムに設定
-				lockOnSystem_->SetViewDirection(followCamera->GetForwardDirection());
-			}
-			std::vector<BaseEnemy *> allTargets;
-			for (const auto &enemy : enemies_) {
-				allTargets.push_back(enemy.get());
-			}
-			for (const auto &spawn : spawns_) {
-				allTargets.push_back(spawn.get());
-			}
-
-			lockOnSystem_->DetectEnemiesRaw(allTargets);
-			lockOnSystem_->UpdateRaw(allTargets);
-			
-		}
-
-		//---------------------------------------
-		// 当たり判定
-		// リセット
-		collisionManager_->Reset();
-
-		// エネミー
-		for (auto &enemy : enemies_) {
-			collisionManager_->AddCollider(enemy.get());
-			// エネミーの弾リスト
-			for (auto &bullet : enemy->GetBullets()) {
-				collisionManager_->AddCollider(bullet.get());
-			}
-		}
-		// spwan
-		for (auto &spawn : spawns_) {
-			collisionManager_->AddCollider(spawn.get());
-		}
-		// プレイヤー
-		collisionManager_->AddCollider(player_.get());
-		// プレイヤーの弾リスト
-		for (auto &bullet : player_->GetBullets()) {
-			collisionManager_->AddCollider(bullet.get());
-		}
-		// プレイヤーのマシンガン弾リスト
-		for (auto &machineGunBullet : player_->GetMachineGunBullets()) {
-			collisionManager_->AddCollider(machineGunBullet.get());
-		}
-		// 更新
-		collisionManager_->Update();
-
-		//---------------------------------------
-		// HUD
-		hud_->SetEnemiesAndSpawns(&enemies_, &spawns_);
-		hud_->Update();
-
-		//---------------------------------------
-		// パーティクル
-		ParticleManager::GetInstance()->Update();
-
-		// wave sprite
-		wave1_->Update();
-		wave2_->Update();
-		wave3_->Update();
-
-		if (waveDisplayTimer_ > 0) {
-			--waveDisplayTimer_;
-			if (waveDisplayTimer_ <= 0) {
-				currentWaveImageIndex_ = -1;
-			}
-		}
-
-		if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::START))
-		{
-			phase_ = Phase::kPose;
-
-			cameraManager_->GetFollowCamera()->enableUpdate_ = false; // カメラの更新を無効化
-
-			pointer->SetPosition({ 640.0f, 360.0f }); // ポインターの位置を中央にリセット
-		}
-
-		//========================================
-		// フェードアウト
-		break;
-	case Phase::kFadeOut:
-		//---------------------------------------
-		// `フェードアウトが終わった場合
-		if (fade_->IsFinished()) {
-			// ゲームをクリアした場合
-			if (isGameClear_) {
-				// ゲームクリアシーンに遷移
-				SceneManager::GetInstance()->ChangeScene("CLEAR");
-			} else if (isGameOver_) {
-				// ゲームオーバーシーンに遷移
-				SceneManager::GetInstance()->ChangeScene("OVER");
-			} else {
-				// タイトルシーンに遷移
-				SceneManager::GetInstance()->ChangeScene("TITLE");
-			}
-		}
-
-		//---------------------------------------
-		// 天球
-		skyDome_->Update();
-
-		//---------------------------------------
-		// 地面
-		ground_->Update();
-
-		//========================================
-		// パーティクル
-		ParticleManager::GetInstance()->Update();
-
-		break;
-	case Phase::kMain:
-		break;
-	case Phase::kPose:
-
-	    Vector2 pointerPos = pointer->GetPosition();
-
-	    Vector2 vect = Input::GetInstance()->GetLeftStick();
- 
-		pointerPos = { pointerPos.x + vect.x * 2.0f , pointerPos.y + -vect.y * 2.0f};
-
-	    pointer->SetPosition(pointerPos);
-
-		if (pointerPos.x < 640)
-		{
-			if (pointerPos.y < 360)
-			{
-				contGame->SetSize({ 665.6f, 166.4f });
-				returnTitle->SetSize({ 512.0f, 128.0f });
-
-				if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A))
-				{
-					phase_ = Phase::kPlay;
-
-					cameraManager_->GetFollowCamera()->enableUpdate_ = true; // カメラの更新を有効化
-				}
-			}
-			else if (pointerPos.y > 360)
-			{
-				returnTitle->SetSize({ 665.6f, 166.4f });
-				contGame->SetSize({ 512.0f, 128.0f });
-
-				if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A))
-				{
-					SceneManager::GetInstance()->ChangeScene("TITLE");
-
-					cameraManager_->GetFollowCamera()->enableUpdate_ = true; // カメラの更新を有効化
-				}
-			}
-		}
-		else
-		{
-			contGame->SetSize({ 512.0f, 128.0f });
-			returnTitle->SetSize({ 512.0f, 128.0f });
-		}
-
-		contGame->Update();
-		returnTitle->Update();
-
-		pointer->Update();
-
-		break;
+	// 関数テーブルで更新処理を呼び出す
+	auto it = updateTable_.find(phase_);
+	if (it != updateTable_.end()) {
+		it->second(); // 対応する Update 関数を呼び出す
 	}
+
 
 	//========================================
 	// ライト
@@ -743,242 +374,13 @@ void GameScene::Update() {
 ///						描画
 void GameScene::Draw() {
 
-	switch (phase_) {
-		///=============================================================================
-	case Phase::kFadeIn:
-
-		DrawBackgroundSprite();
-		/// 背景スプライト描画
-
-		DrawObject();
-		/// オブジェクト描画
-		//========================================
-		// 天球
-		skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					   *directionalLight.get(),
-					   *pointLight.get(),
-					   *spotLight.get());
-		//========================================
-		// 地面
-		ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					  *directionalLight.get(),
-					  *pointLight.get(),
-					  *spotLight.get());
-		//========================================
-		// プレイヤーの描画
-		player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					  *directionalLight.get(),
-					  *pointLight.get(),
-					  *spotLight.get());
-
-		DrawForegroundSprite();
-		/// 前景スプライト描画
-
-		// フェード描画
-		DrawFade();
-
-		break;
-		///=============================================================================
-	case Phase::kPlay:
-
-		DrawBackgroundSprite();
-		/// 背景スプライト描画
-
-		DrawObject();
-		/// オブジェクト描画
-		//========================================
-		// 天球
-		skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					   *directionalLight.get(),
-					   *pointLight.get(),
-					   *spotLight.get());
-		//========================================
-		// 地面
-		ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					  *directionalLight.get(),
-					  *pointLight.get(),
-					  *spotLight.get());
-		//========================================
-		// spawnの描画
-		for (const auto &Spawn : spawns_) {
-			Spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-						*directionalLight.get(),
-						*pointLight.get(),
-						*spotLight.get());
-		}
-		//========================================
-		// 敵
-		for (const auto &enemy : enemies_) {
-			enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-						*directionalLight.get(),
-						*pointLight.get(),
-						*spotLight.get());
-		}
-		//========================================
-		// プレイヤーの描画
-		player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					  *directionalLight.get(),
-					  *pointLight.get(),
-					  *spotLight.get());
-		
-		//========================================
-		// 当たり判定マネージャ
-		collisionManager_->Draw();
-
-		//========================================
-		// HUD
-		hud_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection());
-
-		DrawForegroundSprite();
-		/// 前景スプライト描画
-
-		if (currentWaveImageIndex_ == 1 && wave1_) {
-			wave1_->Draw();
-		} else if (currentWaveImageIndex_ == 2 && wave2_) {
-			wave2_->Draw();
-		} else if (currentWaveImageIndex_ == 3 && wave3_) {
-			wave3_->Draw();
-		}
-
-		menuBotton->Draw();
-
-		pose->Draw();
-
-		break;
-		///=============================================================================
-	case Phase::kFadeOut:
-
-		DrawBackgroundSprite();
-		/// 背景スプライト描画
-
-		DrawObject();
-		/// オブジェクト描画
-		//========================================
-		// 天球
-		skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					   *directionalLight.get(),
-					   *pointLight.get(),
-					   *spotLight.get());
-		//========================================
-		// 地面
-		ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					  *directionalLight.get(),
-					  *pointLight.get(),
-					  *spotLight.get());
-		//========================================
-		// 敵
-		for (const auto &enemy : enemies_) {
-			enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-						*directionalLight.get(),
-						*pointLight.get(),
-						*spotLight.get());
-		}
-		//========================================
-		// プレイヤーの描画
-		player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-					  *directionalLight.get(),
-					  *pointLight.get(),
-					  *spotLight.get());
-		//========================================
-		// LockOn
-		// 🔽 LockOnの描画処理を追加
-		if (lockOnSystem_) {
-			lockOnSystem_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-								*directionalLight.get(),
-								*pointLight.get(),
-								*spotLight.get());
-		}
-		//========================================
-		// 当たり判定マネージャ
-		collisionManager_->Draw();
-
-		DrawForegroundSprite();
-		/// 前景スプライト描画
-
-		// フェード描画
-		DrawFade();
-
-		break;
-		///=============================================================================
-	case Phase::kMain:
-
-		break;
-		///=============================================================================
-	case Phase::kPose:
-
-		DrawBackgroundSprite();
-		/// 背景スプライト描画
-
-		DrawObject();
-		/// オブジェクト描画
-		//========================================
-		// 天球
-		skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight.get(),
-			*pointLight.get(),
-			*spotLight.get());
-		//========================================
-		// 地面
-		ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight.get(),
-			*pointLight.get(),
-			*spotLight.get());
-		//========================================
-		// spawnの描画
-		for (const auto& Spawn : spawns_) {
-			Spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-				*directionalLight.get(),
-				*pointLight.get(),
-				*spotLight.get());
-		}
-		//========================================
-		// 敵
-		for (const auto& enemy : enemies_) {
-			enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-				*directionalLight.get(),
-				*pointLight.get(),
-				*spotLight.get());
-		}
-		//========================================
-		// プレイヤーの描画
-		player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight.get(),
-			*pointLight.get(),
-			*spotLight.get());
-		
-		//========================================
-		// 当たり判定マネージャ
-		collisionManager_->Draw();
-
-		//========================================
-		// HUD
-		//hud_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection());
-
-		DrawForegroundSprite();
-		/// 前景スプライト描画
-
-		if (currentWaveImageIndex_ == 1 && wave1_) {
-			wave1_->Draw();
-		}
-		else if (currentWaveImageIndex_ == 2 && wave2_) {
-			wave2_->Draw();
-		}
-		else if (currentWaveImageIndex_ == 3 && wave3_) {
-			wave3_->Draw();
-		}
-
-		backGround->Draw();
-
-		explanation->Draw();
-
-		contGame->Draw();
-
-		returnTitle->Draw();
-
-		pointer->Draw();
-
-		break;
+	//========================================
+	// 関数テーブルで描画処理を呼び出す
+	auto it = drawTable_.find(phase_);
+	if (it != drawTable_.end()) {
+		it->second(); // 対応する draw 関数を呼び出す
 	}
+
 
 	//========================================
 	// パーティクルの描画
@@ -1250,4 +652,612 @@ void GameScene::AvoidOverlap(std::vector<BaseEnemy *> &allEnemies, float avoidRa
 			self->SetVelocityY(0.0f);
 		}
 	}
+}
+
+void GameScene::FadeInUpdate()
+{
+	if (fade_->IsFinished()) {
+
+		phase_ = Phase::kPlay;
+
+		// 入力の受付をオンに
+		Input::GetInstance()->SetIsReception(true);
+	}
+
+	//---------------------------------------
+	// プレイヤーの更新
+	player_->Update();
+	//---------------------------------------
+	// 天球
+	skyDome_->Update();
+	//---------------------------------------
+	// 地面
+	ground_->Update();
+}
+
+void GameScene::MainUpdate()
+{
+}
+
+void GameScene::PlayUpdate()
+{
+	if (false) {
+		isGameClear_ = true;
+		isContinue_ = false;
+	}
+	// ゲームオーバーの場合
+	if (player_->GetHp() <= 0) {
+		isGameOver_ = true;
+		isContinue_ = false;
+	}
+	// リセット
+	if (Input::GetInstance()->Triggerkey(DIK_R)) {
+		isContinue_ = false;
+	}
+	if (!isContinue_) {
+		phase_ = Phase::kFadeOut;
+		fade_->Start(Fade::Status::FadeOut, fadeTime_);
+	}
+	if (isGameClear_) {
+		phase_ = Phase::kFadeOut;
+		fade_->Start(Fade::Status::FadeOut, fadeTime_);
+	}
+
+	//---------------------------------------
+	// プレイヤーの更新
+	//player_->Update();
+	if (waveDisplayTimer_ <= 0) {
+		player_->Update();
+		cameraManager_->GetFollowCamera()->enableUpdate_ = true;
+	}
+	else {
+		player_->StopMachineGunSound();
+		cameraManager_->GetFollowCamera()->enableUpdate_ = false;
+	}
+
+	//---------------------------------------
+	// 天球
+	skyDome_->Update();
+
+	//---------------------------------------
+	// 地面
+	ground_->Update();
+
+	//---------------------------------------
+	// 敵出現
+	UpdateEnemyPopCommands();
+	// spawnの更新
+	for (const auto& Spawn : spawns_) {
+		Spawn->Update();
+	}
+	// Spawn
+	spawns_.erase(
+		std::remove_if(spawns_.begin(), spawns_.end(),
+			[this](const std::unique_ptr<BaseEnemy>& spawn) {
+				if (spawn->GetSpawnHp() <= 0) {
+					// ロックオンシステムから敵を削除
+					if (lockOnSystem_) {
+						lockOnSystem_->RemoveLockedEnemy(spawn.get());
+					}
+
+					// 削除したエネミーをターゲットに持つプレイヤーのミサイルのターゲットをnullptrに設定
+					for (auto it = player_->GetBullets().begin(); it != player_->GetBullets().end(); ++it) {
+
+						if (it->get()->GetTarget() == spawn.get()) {
+							it->get()->SetTarget(nullptr);
+						}
+					}
+					return true;
+				}
+				return false;
+			}),
+		spawns_.end());
+	if (spawns_.empty() && waveReady_) {
+		player_->StopMachineGunSound();
+		enemies_.clear();
+
+		waveIndex_++;
+		if (easy_) {
+
+			if (waveIndex_ < EwaveCsvPaths_.size()) {
+
+				currentWaveImageIndex_ = waveIndex_ + 1;
+				waveDisplayTimer_ = waveDisplayDuration_;
+
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+
+				LoadEnemyPopData(waveIndex_);
+				waveReady_ = false;
+			}
+			else {
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+				isGameClear_ = true;
+			}
+		}
+		else if (nomal_) {
+			if (waveIndex_ < NwaveCsvPaths_.size()) {
+
+				currentWaveImageIndex_ = waveIndex_ + 1;
+				waveDisplayTimer_ = waveDisplayDuration_;
+
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+
+				LoadEnemyPopData(waveIndex_);
+				waveReady_ = false;
+			}
+			else {
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+				isGameClear_ = true;
+			}
+		}
+		else if (hard_) {
+			if (waveIndex_ < HwaveCsvPaths_.size()) {
+
+				currentWaveImageIndex_ = waveIndex_ + 1;
+				waveDisplayTimer_ = waveDisplayDuration_;
+
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+
+				LoadEnemyPopData(waveIndex_);
+				waveReady_ = false;
+			}
+			else {
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+				isGameClear_ = true;
+			}
+		}
+	}
+	// 敵リスト
+	for (const auto& enemy : enemies_) {
+		enemy->Update();
+	}
+	{
+		std::vector<BaseEnemy*> allEnemies;
+		for (const auto& e : enemies_) {
+			allEnemies.push_back(e.get());
+		}
+		for (const auto& s : spawns_) {
+			allEnemies.push_back(s.get());
+		}
+		AvoidOverlap(allEnemies, 4.0f);
+	}
+	// 敵の削除
+	enemies_.erase(
+		// 削除条件
+		std::remove_if(enemies_.begin(), enemies_.end(),
+			[this](const std::unique_ptr<BaseEnemy>& enemy) {
+				// HPが0以下の場合
+				if (enemy->GetHp() <= 0) {
+					// ロックオンシステムから敵を削除
+					if (lockOnSystem_) {
+						lockOnSystem_->RemoveLockedEnemy(enemy.get());
+					}
+
+					// 削除したエネミーをターゲットに持つプレイヤーのミサイルのターゲットをnullptrに設定
+					for (auto it = player_->GetBullets().begin(); it != player_->GetBullets().end(); ++it) {
+
+						if (it->get()->GetTarget() == enemy.get()) {
+							it->get()->SetTarget(nullptr);
+						}
+					}
+
+					return true; // 削除する
+				}
+				return false; // 削除しない
+			}),
+		// 実際に削除する
+		enemies_.end());
+
+	//---------------------------------------
+	// ロックオンの処理追加
+	if (lockOnSystem_) {
+		// プレイヤーの位置をロックオンシステムにセット
+		lockOnSystem_->SetPosition(player_->GetPosition());
+
+		// カメラがFollowCameraの場合、視点方向を設定
+		auto activeCamera = cameraManager_->GetActiveCamera();
+		if (auto followCamera = dynamic_cast<FollowCamera*>(activeCamera)) {
+			// カメラからの視点方向をロックオンシステムに設定
+			lockOnSystem_->SetViewDirection(followCamera->GetForwardDirection());
+		}
+		std::vector<BaseEnemy*> allTargets;
+		for (const auto& enemy : enemies_) {
+			allTargets.push_back(enemy.get());
+		}
+		for (const auto& spawn : spawns_) {
+			allTargets.push_back(spawn.get());
+		}
+
+		lockOnSystem_->DetectEnemiesRaw(allTargets);
+		lockOnSystem_->UpdateRaw(allTargets);
+
+	}
+
+	//---------------------------------------
+	// 当たり判定
+	// リセット
+	collisionManager_->Reset();
+
+	// エネミー
+	for (auto& enemy : enemies_) {
+		collisionManager_->AddCollider(enemy.get());
+		// エネミーの弾リスト
+		for (auto& bullet : enemy->GetBullets()) {
+			collisionManager_->AddCollider(bullet.get());
+		}
+	}
+	// spwan
+	for (auto& spawn : spawns_) {
+		collisionManager_->AddCollider(spawn.get());
+	}
+	// プレイヤー
+	collisionManager_->AddCollider(player_.get());
+	// プレイヤーの弾リスト
+	for (auto& bullet : player_->GetBullets()) {
+		collisionManager_->AddCollider(bullet.get());
+	}
+	// プレイヤーのマシンガン弾リスト
+	for (auto& machineGunBullet : player_->GetMachineGunBullets()) {
+		collisionManager_->AddCollider(machineGunBullet.get());
+	}
+	// 更新
+	collisionManager_->Update();
+
+	//---------------------------------------
+	// HUD
+	hud_->SetEnemiesAndSpawns(&enemies_, &spawns_);
+	hud_->Update();
+
+	//---------------------------------------
+	// パーティクル
+	ParticleManager::GetInstance()->Update();
+
+	// wave sprite
+	wave1_->Update();
+	wave2_->Update();
+	wave3_->Update();
+
+	if (waveDisplayTimer_ > 0) {
+		--waveDisplayTimer_;
+		if (waveDisplayTimer_ <= 0) {
+			currentWaveImageIndex_ = -1;
+		}
+	}
+
+	if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::START))
+	{
+		phase_ = Phase::kPose;
+
+		cameraManager_->GetFollowCamera()->enableUpdate_ = false; // カメラの更新を無効化
+
+		pointer->SetPosition({ 640.0f, 360.0f }); // ポインターの位置を中央にリセット
+	}
+
+}
+
+void GameScene::FadeOutUpdate()
+{
+	//---------------------------------------
+		// `フェードアウトが終わった場合
+	if (fade_->IsFinished()) {
+		// ゲームをクリアした場合
+		if (isGameClear_) {
+			// ゲームクリアシーンに遷移
+			SceneManager::GetInstance()->ChangeScene("CLEAR");
+		}
+		else if (isGameOver_) {
+			// ゲームオーバーシーンに遷移
+			SceneManager::GetInstance()->ChangeScene("OVER");
+		}
+		else {
+			// タイトルシーンに遷移
+			SceneManager::GetInstance()->ChangeScene("TITLE");
+		}
+	}
+
+	//---------------------------------------
+	// 天球
+	skyDome_->Update();
+
+	//---------------------------------------
+	// 地面
+	ground_->Update();
+
+	//========================================
+	// パーティクル
+	ParticleManager::GetInstance()->Update();
+}
+
+void GameScene::PoseUpdate()
+{
+	Vector2 pointerPos = pointer->GetPosition();
+
+	Vector2 vect = Input::GetInstance()->GetLeftStick();
+
+	pointerPos = { pointerPos.x + vect.x * 2.0f , pointerPos.y + -vect.y * 2.0f };
+
+	pointer->SetPosition(pointerPos);
+
+	if (pointerPos.x < 640)
+	{
+		if (pointerPos.y < 360)
+		{
+			contGame->SetSize({ 665.6f, 166.4f });
+			returnTitle->SetSize({ 512.0f, 128.0f });
+
+			if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A))
+			{
+				phase_ = Phase::kPlay;
+
+				cameraManager_->GetFollowCamera()->enableUpdate_ = true; // カメラの更新を有効化
+			}
+		}
+		else if (pointerPos.y > 360)
+		{
+			returnTitle->SetSize({ 665.6f, 166.4f });
+			contGame->SetSize({ 512.0f, 128.0f });
+
+			if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A))
+			{
+				SceneManager::GetInstance()->ChangeScene("TITLE");
+
+				cameraManager_->GetFollowCamera()->enableUpdate_ = true; // カメラの更新を有効化
+			}
+		}
+	}
+	else
+	{
+		contGame->SetSize({ 512.0f, 128.0f });
+		returnTitle->SetSize({ 512.0f, 128.0f });
+	}
+
+	contGame->Update();
+	returnTitle->Update();
+
+	pointer->Update();
+}
+
+void GameScene::FadeInDraw()
+{
+	DrawBackgroundSprite();
+	/// 背景スプライト描画
+
+	DrawObject();
+	/// オブジェクト描画
+	//========================================
+	// 天球
+	skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// 地面
+	ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// プレイヤーの描画
+	player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+
+	DrawForegroundSprite();
+	/// 前景スプライト描画
+
+	// フェード描画
+	DrawFade();
+}
+
+void GameScene::MainDraw()
+{
+	
+}
+
+void GameScene::PlayDraw()
+{
+	DrawBackgroundSprite();
+	/// 背景スプライト描画
+
+	DrawObject();
+	/// オブジェクト描画
+	//========================================
+	// 天球
+	skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// 地面
+	ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// spawnの描画
+	for (const auto& Spawn : spawns_) {
+		Spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
+	}
+	//========================================
+	// 敵
+	for (const auto& enemy : enemies_) {
+		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
+	}
+	//========================================
+	// プレイヤーの描画
+	player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+
+	//========================================
+	// 当たり判定マネージャ
+	collisionManager_->Draw();
+
+	//========================================
+	// HUD
+	hud_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection());
+
+	DrawForegroundSprite();
+	/// 前景スプライト描画
+
+	if (currentWaveImageIndex_ == 1 && wave1_) {
+		wave1_->Draw();
+	}
+	else if (currentWaveImageIndex_ == 2 && wave2_) {
+		wave2_->Draw();
+	}
+	else if (currentWaveImageIndex_ == 3 && wave3_) {
+		wave3_->Draw();
+	}
+
+	menuBotton->Draw();
+
+	pose->Draw();
+}
+
+void GameScene::FadeOutDraw()
+{
+	DrawBackgroundSprite();
+	/// 背景スプライト描画
+
+	DrawObject();
+	/// オブジェクト描画
+	//========================================
+	// 天球
+	skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// 地面
+	ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// 敵
+	for (const auto& enemy : enemies_) {
+		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
+	}
+	//========================================
+	// プレイヤーの描画
+	player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// LockOn
+	// 🔽 LockOnの描画処理を追加
+	if (lockOnSystem_) {
+		lockOnSystem_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
+	}
+	//========================================
+	// 当たり判定マネージャ
+	collisionManager_->Draw();
+
+	DrawForegroundSprite();
+	/// 前景スプライト描画
+
+	// フェード描画
+	DrawFade();
+}
+
+void GameScene::PoseDraw()
+{
+	DrawBackgroundSprite();
+	/// 背景スプライト描画
+
+	DrawObject();
+	/// オブジェクト描画
+	//========================================
+	// 天球
+	skyDome_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// 地面
+	ground_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+	//========================================
+	// spawnの描画
+	for (const auto& Spawn : spawns_) {
+		Spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
+	}
+	//========================================
+	// 敵
+	for (const auto& enemy : enemies_) {
+		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
+	}
+	//========================================
+	// プレイヤーの描画
+	player_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+		*directionalLight.get(),
+		*pointLight.get(),
+		*spotLight.get());
+
+	//========================================
+	// 当たり判定マネージャ
+	collisionManager_->Draw();
+
+	//========================================
+	// HUD
+	//hud_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection());
+
+	DrawForegroundSprite();
+	/// 前景スプライト描画
+
+	if (currentWaveImageIndex_ == 1 && wave1_) {
+		wave1_->Draw();
+	}
+	else if (currentWaveImageIndex_ == 2 && wave2_) {
+		wave2_->Draw();
+	}
+	else if (currentWaveImageIndex_ == 3 && wave3_) {
+		wave3_->Draw();
+	}
+
+	backGround->Draw();
+
+	explanation->Draw();
+
+	contGame->Draw();
+
+	returnTitle->Draw();
+
+	pointer->Draw();
 }

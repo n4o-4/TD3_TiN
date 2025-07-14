@@ -75,6 +75,37 @@ private: // 静的メンバ関数
 
 	void AvoidOverlap(std::vector<BaseEnemy *> &allEnemies, float avoidRadius);
 
+	// Update
+	void FadeInUpdate();
+	void MainUpdate();
+	void PlayUpdate();
+	void FadeOutUpdate();
+	void PoseUpdate();
+
+	std::unordered_map<Phase, std::function<void()>> updateTable_ = {
+	  { Phase::kFadeIn,  [this] { FadeInUpdate(); } },
+	  { Phase::kMain,    [this] { MainUpdate(); } },
+	  { Phase::kPlay,    [this] { PlayUpdate(); } },
+	  { Phase::kPose,    [this] { PoseUpdate(); } },
+	  { Phase::kFadeOut, [this] { FadeOutUpdate(); } }
+	};
+
+	// Draw
+	void FadeInDraw();
+	void MainDraw();
+	void PlayDraw();
+	void FadeOutDraw();
+	void PoseDraw();
+
+	std::unordered_map<Phase, std::function<void()>> drawTable_ = {
+	  { Phase::kFadeIn,  [this] { FadeInDraw(); } },
+	  { Phase::kMain,    [this] { MainDraw(); } },
+	  { Phase::kPlay,    [this] { PlayDraw(); } },
+	  { Phase::kPose,    [this] { PoseDraw(); } },
+	  { Phase::kFadeOut, [this] { FadeOutDraw(); } }
+	};
+	
+
 private:
 	// 敵のスポーン範囲の設定
 	const float minX = -50.0f, maxX = 50.0f;
