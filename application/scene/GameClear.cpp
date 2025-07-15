@@ -1,14 +1,14 @@
-#include "GameClear.h"
+ï»¿#include "GameClear.h"
 
 void GameClear::Initialize() {
 	BaseScene::Initialize();
 
-	// ƒ‰ƒCƒg
-	// wŒü«
+	// ãƒ©ã‚¤ãƒˆ
+	// æŒ‡å‘æ€§
 	directionalLight = std::make_unique<DirectionalLight>();
 	directionalLight->Initilaize();
 	directionalLight->intensity_ = 0.0f;
-	// “_ŒõŒ¹
+	// ç‚¹å…‰æº
 	pointLight = std::make_unique<PointLight>();
 	pointLight->Initilize();
 	pointLight->intensity_ = 0.0f;
@@ -20,7 +20,7 @@ void GameClear::Initialize() {
 	mvPointLight->decay_ = 1.0f;
 	mvPointLight->color_ = { 0.925f, 0.498f, 0.118f, 1.0f };
 
-	// ƒXƒ|ƒbƒgƒ‰ƒCƒg
+	// ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆ
 	spotLight = std::make_unique<SpotLight>();
 	spotLight->Initialize();
 	spotLight->direction_ = { 0.0f,-1.0f,0.0f };
@@ -123,7 +123,7 @@ void GameClear::Initialize() {
 	titleModel_->Initialize(Object3dCommon::GetInstance());
 	titleModel_->SetModel("scene/Title.obj");
 
-	// ‰ŠúˆÊ’u‚ğİ’è
+	// åˆæœŸä½ç½®ã‚’è¨­å®š
 	mwbodyTransform_ = std::make_unique<WorldTransform>();
 	mwbodyTransform_->Initialize();
 	mwbodyTransform_->transform.translate = { 0.0f, 1.0f , 1.0f };
@@ -273,43 +273,43 @@ void GameClear::Update() {
 
 		buttonA_->Update();
 
-		mwbodyTransform_->UpdateMatrix();// s—ñXV
-		mwbody_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		mwbody_->Update();// XV
+		mwbodyTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		mwbody_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		mwbody_->Update();// æ›´æ–°
 
-		mwdoorTransform_->UpdateMatrix();// s—ñXV
-		mwdoor_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		mwdoor_->Update();// XV
+		mwdoorTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		mwdoor_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		mwdoor_->Update();// æ›´æ–°
 
-		mwdishTransform_->UpdateMatrix();// s—ñXV
-		mwdish_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		mwdish_->Update();// XV
+		mwdishTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		mwdish_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		mwdish_->Update();// æ›´æ–°
 
-		clearTransform_->UpdateMatrix();// s—ñXV
-		clearModel_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		clearModel_->Update();// XV
-		titleModel_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		titleModel_->Update();// XV
+		clearTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		clearModel_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		clearModel_->Update();// æ›´æ–°
+		titleModel_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		titleModel_->Update();// æ›´æ–°
 		for (int i = 0; i < 4; i++) {
-			missileTransforms_[i]->UpdateMatrix();// s—ñXV
-			missileModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-			missileModels_[i]->Update();// XV
+			missileTransforms_[i]->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+			missileModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+			missileModels_[i]->Update();// æ›´æ–°
 
-			spawnTransforms_[i]->UpdateMatrix();// s—ñXV
-			spawnModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-			spawnModels_[i]->Update();// XV
+			spawnTransforms_[i]->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+			spawnModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+			spawnModels_[i]->Update();// æ›´æ–°
 		}
-		//spawnTransform_->UpdateMatrix();// s—ñXV
-		//spawnModel_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		//spawnModel_->Update();// XV
+		//spawnTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		//spawnModel_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		//spawnModel_->Update();// æ›´æ–°
 
-		//missileTransform_->UpdateMatrix();// s—ñXV
-		//missileModel_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		//missileModel_->Update();// XV
+		//missileTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		//missileModel_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		//missileModel_->Update();// æ›´æ–°
 
-		mvSceneTransform_->UpdateMatrix();// s—ñXV
-		mvSceneModel_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		mvSceneModel_->Update();// XV
+		mvSceneTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		mvSceneModel_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		mvSceneModel_->Update();// æ›´æ–°
 
 
 		

@@ -143,45 +143,43 @@ void Enemy::UpdateChaseState() {
 	BaseEnemy::MoveToTarget();
 }
 
-// 戦闘状態の更新
 void Enemy::UpdateCombatState() {
-	if (target_) {
-		// ターゲットに向かうベクトルを計算
-		Vector3 toTarget = target_->transform.translate - worldTransform_->transform.translate;
-		float distance = Length(toTarget);
-		Vector3 direction = Normalize(toTarget);
+	if (!target_) return;
 
-		// ストラッフィング（横移動）のベクトルを計算
-		Vector3 strafeDir = { direction.z, 0.0f, -direction.x }; // 90度回転
+	// ターゲットに向かうベクトルを計算
+	Vector3 toTarget = target_->transform.translate - worldTransform_->transform.translate;
+	float distance = Length(toTarget);
+	Vector3 direction = Normalize(toTarget);
 
-		// 時間とともに方向を変えるための係数（-1から1の範囲）
-		float strafeFactor = sinf(stateTimer_ * 0.5f);
+	// ストラッフィング（横移動）のベクトルを計算
+	Vector3 strafeDir = { direction.z, 0.0f, -direction.x }; // 90度回転
 
-		// 距離に基づいて行動を決定
-		Vector3 moveDirection;
+	// 時間とともに方向を変えるための係数（-1から1の範囲）
+	float strafeFactor = sinf(stateTimer_ * 0.5f);
 
-		if (distance < safeDistance_) {
-			// 近すぎる場合、後退
-			//moveDirection = -direction * 0.7f + strafeDir * strafeFactor * 0.3f;
-			moveDirection.x = -direction.x * 0.7f + strafeDir.x * strafeFactor * 0.3f;
-			moveDirection.y = 0.0f;
-			moveDirection.z = -direction.z * 0.7f + strafeDir.z * strafeFactor * 0.3f;
-		} else if (distance > combatDistance_) {
-			// 遠すぎる場合、接近
-			moveDirection = direction * 0.7f + strafeDir * strafeFactor * 0.3f;
-		} else {
-			// 適切な距離の場合、ストラッフィングのみ
-			moveDirection = strafeDir * strafeFactor;
-		}
+	// 距離に基づいて行動を決定
+	Vector3 moveDirection;
 
-		// 速度を更新
-		velocity_ = Normalize(moveDirection) * speed_ * 0.8f;
-
-		// 位置を更新
-		worldTransform_->transform.translate = worldTransform_->transform.translate + velocity_;
-
-		// 常にターゲットの方を向く
-		float targetRotationY = std::atan2(direction.x, direction.z);
-		worldTransform_->transform.rotate.y = targetRotationY;
+	if (distance < safeDistance_) {
+		// 近すぎる場合、後退
+		moveDirection.x = -direction.x * 0.7f + strafeDir.x * strafeFactor * 0.3f;
+		moveDirection.y = 0.0f;
+		moveDirection.z = -direction.z * 0.7f + strafeDir.z * strafeFactor * 0.3f;
+	} else if (distance > combatDistance_) {
+		// 遠すぎる場合、接近
+		moveDirection = direction * 0.7f + strafeDir * strafeFactor * 0.3f;
+	} else {
+		// 適切な距離の場合、ストラッフィングのみ
+		moveDirection = strafeDir * strafeFactor;
 	}
+
+	// 速度を更新
+	velocity_ = Normalize(moveDirection) * speed_ * 0.8f;
+
+	// 位置を更新
+	worldTransform_->transform.translate += velocity_;
+
+	// 常にターゲットの方を向く
+	float targetRotationY = std::atan2(direction.x, direction.z);
+	worldTransform_->transform.rotate.y = targetRotationY;
 }

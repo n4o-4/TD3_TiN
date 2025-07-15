@@ -1,4 +1,4 @@
-#include "GameOver.h"
+ï»¿#include "GameOver.h"
 
 void GameOver::Initialize() {
 	BaseScene::Initialize();
@@ -34,12 +34,12 @@ void GameOver::Initialize() {
 	mwSE_ = std::make_unique<Audio>();
 	mwSE_->Initialize();
 
-	// ƒ‰ƒCƒg
-	// wŒü«
+	// ãƒ©ã‚¤ãƒˆ
+	// æŒ‡å‘æ€§
 	directionalLight = std::make_unique<DirectionalLight>();
 	directionalLight->Initilaize();
 	directionalLight->intensity_ = 0.0f;
-	// “_ŒõŒ¹
+	// ç‚¹å…‰æº
 	pointLight = std::make_unique<PointLight>();
 	pointLight->Initilize();
 	pointLight->intensity_ = 0.0f;
@@ -51,7 +51,7 @@ void GameOver::Initialize() {
 	mvPointLight->decay_ = 1.0f;
 	mvPointLight->color_ = { 0.925f, 0.498f, 0.118f, 1.0f };
 
-	// ƒXƒ|ƒbƒgƒ‰ƒCƒg
+	// ã‚¹ãƒãƒƒãƒˆãƒ©ã‚¤ãƒˆ
 	spotLight = std::make_unique<SpotLight>();
 	spotLight->Initialize();
 	spotLight->direction_ = { 0.0f,-1.0f,0.0f };
@@ -283,22 +283,22 @@ void GameOver::Update() {
 		ParticleManager::GetInstance()->Update();
 
 		for (int i = 0; i < 4; i++) {
-			mvTransforms_[i]->UpdateMatrix();// s—ñXV
-			mvModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-			mvModels_[i]->Update();// XV
+			mvTransforms_[i]->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+			mvModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+			mvModels_[i]->Update();// æ›´æ–°
 		}
 
 		for (int i = 0; i < 5; i++) {
-			enemyTransforms_[i]->UpdateMatrix();// s—ñXV
-			enemyModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-			enemyModels_[i]->Update();// XV
+			enemyTransforms_[i]->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+			enemyModels_[i]->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+			enemyModels_[i]->Update();// æ›´æ–°
 
 		}
-		textTransform_->UpdateMatrix();// s—ñXV
-		overModel_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		overModel_->Update();// XV
-		titleModel_->SetLocalMatrix(MakeIdentity4x4());// ƒ[ƒJƒ‹s—ñ‚ğ’PˆÊs—ñ‚É
-		titleModel_->Update();// XV
+		textTransform_->UpdateMatrix();// è¡Œåˆ—æ›´æ–°
+		overModel_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		overModel_->Update();// æ›´æ–°
+		titleModel_->SetLocalMatrix(MakeIdentity4x4());// ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’å˜ä½è¡Œåˆ—ã«
+		titleModel_->Update();// æ›´æ–°
 
 		if (!isStartClose_ && showButtonA_ &&
 			(Input::GetInstance()->Triggerkey(DIK_RETURN) || Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A))) {
