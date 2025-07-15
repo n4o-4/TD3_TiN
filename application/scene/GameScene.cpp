@@ -1,22 +1,6 @@
 ﻿#include "GameScene.h"
 #include "LineManager.h"
 #include "imgui.h"
-///=============================================================================
-///						マトリックス表示
-void ShowMatrix4x4(const Matrix4x4 &matrix, const char *label) {
-	ImGui::Text("%s", label);
-	if (ImGui::BeginTable(label, 4, ImGuiTableFlags_Borders)) {
-		//
-		for (int i = 0; i < 4; ++i) {
-			ImGui::TableNextRow();
-			for (int j = 0; j < 4; ++j) {
-				ImGui::TableSetColumnIndex(j);
-				ImGui::Text("%.3f", matrix.m[i][j]);
-			}
-		}
-		ImGui::EndTable();
-	}
-}
 
 ///=============================================================================
 ///						初期化
