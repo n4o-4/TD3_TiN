@@ -25,7 +25,7 @@ public:
 
 	// 特定の波のデータをstringstream形式で返す
 	std::istringstream GetWaveStream(int index) const;
-
+	
 private:
 	DifficultyManager();
 

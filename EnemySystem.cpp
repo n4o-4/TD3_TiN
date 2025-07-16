@@ -58,8 +58,6 @@ void EnemySystem::Update() {
             SpawnEnemyChair(spawnData.position, spawnData.hp);
         } else if (spawnData.type == "WM") {
             SpawnEnemyWM(spawnData.position, spawnData.hp);
-        } else {
-            SpawnEnemy(spawnData.position);
         }
 
         spawnedThisFrame++;
@@ -141,12 +139,15 @@ void EnemySystem::SpawnEnemy(const Vector3& pos) {
 }
 
 void EnemySystem::SpawnEnemyRC(const Vector3& pos, int hp) {
-    auto enemy = std::make_unique<GroundTypeEnemy>();
-    enemy->Initialize();
-    enemy->SetPosition(pos);
-    enemy->SetTarget(player_->GetWorldTransform());
-    enemy->SetHp(hp);
-    enemies_.push_back(std::move(enemy));
+    std::unique_ptr<BaseEnemy> newEnemy = std::make_unique<GroundTypeEnemy>();
+    if (auto* enemyNormal = dynamic_cast<GroundTypeEnemy*>(newEnemy.get())) {
+        enemyNormal->Initialize();
+        enemyNormal->SetPosition(pos);
+        enemyNormal->SetTarget(player_->GetWorldTransform());
+        enemyNormal->SetHp(hp);
+    }
+
+    enemies_.push_back(std::move(newEnemy));
 }
 
 void EnemySystem::SpawnEnemyIron(const Vector3& pos, int hp) {

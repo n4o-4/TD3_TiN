@@ -59,6 +59,19 @@ void GameScene::Initialize() {
 	const auto& spawns = enemySystem_->GetSpawns();
 	// 敵出現
 	//========================================
+	DifficultyManager::GetInstance()->PreloadCSVFiles();
+	Difficulty difficulty = DifficultyManager::GetInstance()->GetDifficulty();
+	switch (difficulty) {
+	case Difficulty::Easy:
+		easy_ = true;
+		break;
+	case Difficulty::Normal:
+		nomal_ = true;
+		break;
+	case Difficulty::Hard:
+		hard_ = true;
+		break;
+	}
 	if (DifficultyManager::GetInstance()->GetWaveCount() > 0) {
 		waveIndex_ = 0;
 		enemySystem_->LoadWaveData(waveIndex_, DifficultyManager::GetInstance()->GetWaveStream(waveIndex_));
@@ -313,24 +326,42 @@ void GameScene::Update() {
 		ImGui::TextWrapped("waveCsvPaths_ : %d", EwaveCsvPaths_.size());
 		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Difficulty")) {
-		ImGui::Text("easy_  : %s", easy_ ? "true" : "false");
-		ImGui::Text("nomal_ : %s", nomal_ ? "true" : "false");
-		ImGui::Text("hard_  : %s", hard_ ? "true" : "false");
 
-		std::string currentCSV;
-		if (easy_ && waveIndex_ < EwaveCsvPaths_.size()) {
-			currentCSV = EwaveCsvPaths_[waveIndex_];
-		} else if (nomal_ && waveIndex_ < NwaveCsvPaths_.size()) {
-			currentCSV = NwaveCsvPaths_[waveIndex_];
-		} else if (hard_ && waveIndex_ < HwaveCsvPaths_.size()) {
-			currentCSV = HwaveCsvPaths_[waveIndex_];
-		} else {
-			currentCSV = "Out of range";
+	if (ImGui::TreeNode("Difficulty")) {
+		Difficulty difficulty = DifficultyManager::GetInstance()->GetDifficulty();
+
+		// 현재 난이도 텍스트
+		const char* difficultyStr = "Unknown";
+		switch (difficulty) {
+		case Difficulty::Easy:   difficultyStr = "Easy"; break;
+		case Difficulty::Normal: difficultyStr = "Normal"; break;
+		case Difficulty::Hard:   difficultyStr = "Hard"; break;
+		}
+		ImGui::BulletText("Current Difficulty: %s", difficultyStr);
+		ImGui::BulletText("Wave Index: %d", waveIndex_);
+
+		// 현재 CSV 파일 경로
+		ImGui::Separator();
+		ImGui::Text("CSV File:");
+		//ImGui::TextWrapped("%s", DifficultyManager::GetInstance()->GetWaveStreamPath(waveIndex_).c_str());
+
+		// 현재 CSV 파일의 내용 미리보기
+		ImGui::Separator();
+		if (ImGui::TreeNode("CSV Contents")) {
+			const auto& stream = DifficultyManager::GetInstance()->GetWaveStream(waveIndex_);
+			std::string content = stream.str(); // istringstream → string 변환
+
+			ImGui::BeginChild("CSVWindow", ImVec2(0, 150), true);
+			ImGui::TextWrapped("%s", content.c_str());
+			ImGui::EndChild();
+			ImGui::TreePop();
 		}
 
-		ImGui::Text("Current CSV: %s", currentCSV.c_str());
+		ImGui::TreePop();
+	}
 
+	if (ImGui::TreeNode("Enemy Debug")) {
+		ImGui::Text("Enemy Count: %zu", enemySystem_->GetEnemies().size());
 		ImGui::TreePop();
 	}
 

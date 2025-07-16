@@ -58,3 +58,5 @@ std::istringstream DifficultyManager::GetWaveStream(int index) const {
 	assert(index >= 0 && index < cachedWaveData_.size());
 	return std::istringstream(cachedWaveData_[index]);
 }
+
+
