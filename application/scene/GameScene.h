@@ -22,7 +22,8 @@
 #include "Spawn.h"
 #include <queue> // 追加
 #include <random>
-
+#include "EnemySystem.h"
+#include "DifficultyManager.h"
 #include <algorithm>
 
 class GameScene : public BaseScene {
@@ -41,26 +42,10 @@ public: // メンバ関数
 	void Draw() override;
 
 private: // 静的メンバ関数
-	// 敵の出現データの読み込み
-	void LoadEnemyPopData(int index);
 
 	// 敵の出現データの更新
 	void UpdateEnemyPopCommands();
 
-	// 敵の出現
-	void SpawnEnemy(const Vector3 &position);
-
-	void SpawnEnemyKumo(const Vector3 &position, int hp);
-
-	void SpawnEnemyBat(const Vector3 &position, int hp);
-
-	void SpawnEnemyBomb(const Vector3 &position, int hp);
-
-	void SpawnEnemyChair(const Vector3 &position, int hp);
-
-	void SpawnEnemyWM(const Vector3 &position, int hp);
-
-	void SpawnSet(const Vector3 &position);
 
 	std::string currentSpawnType_;
 
@@ -73,7 +58,6 @@ private: // 静的メンバ関数
 	std::queue<DelayedSpawnData> delayedSpawnQueue_;
 	int spawnPerFrame_ = 1; // 1フレームあたりの最大召喚数
 
-	void AvoidOverlap(std::vector<BaseEnemy *> &allEnemies, float avoidRadius);
 
 	// Update
 	void FadeInUpdate();
@@ -104,7 +88,7 @@ private: // 静的メンバ関数
 	  { Phase::kPose,    [this] { PoseDraw(); } },
 	  { Phase::kFadeOut, [this] { FadeOutDraw(); } }
 	};
-	
+
 
 private:
 	// 敵のスポーン範囲の設定
@@ -169,17 +153,12 @@ private:
 	//========================================
 	// 敵出現
 	std::stringstream enemyPopCommands;
-	// 敵のリスト
-	std::vector<std::unique_ptr<BaseEnemy>> enemies_;
-	// 待機フラグ
-	bool isWaiting_ = false;
-	// 待機時間
-	int32_t waitTimer_ = 0;
+	//
+	std::unique_ptr<EnemySystem> enemySystem_;
+
 	//========================================
 	// 当たり判定マネージャ
 	std::unique_ptr<CollisionManager> collisionManager_ = nullptr;
-	//
-	std::vector<std::unique_ptr<BaseEnemy>> spawns_;
 
 	std::unique_ptr<LineDrawerBase> lineDrawer_ = nullptr;
 
