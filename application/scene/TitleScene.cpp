@@ -1,7 +1,8 @@
 ﻿#include "TitleScene.h"
 
 
-void TitleScene::Initialize() {
+void TitleScene::Initialize()
+{
 	BaseScene::Initialize();
 
 	TextureManager::GetInstance()->LoadTexture("Resources/monsterBall.png");
@@ -98,7 +99,7 @@ void TitleScene::Initialize() {
 
 		mvTransforms_[i] = std::make_unique<WorldTransform>();
 		mvTransforms_[i]->Initialize();
-
+		
 	}
 
 	mvModels_[0]->SetModel("titleM/wvBody.obj");
@@ -129,7 +130,7 @@ void TitleScene::Initialize() {
 	textTransform_ = std::make_unique<WorldTransform>();
 	textTransform_->Initialize();
 	textTransform_->transform.translate = { 1.0f, 0.1f , 0.0f };
-	textTransform_->transform.scale = { 0.38f,0.66f,1.0f };
+	textTransform_->transform.scale = {0.38f,0.66f,1.0f};
 
 	tinModel_ = std::make_unique<Object3d>();
 	tinModel_->Initialize(Object3dCommon::GetInstance());
@@ -162,7 +163,7 @@ void TitleScene::Initialize() {
 	se3_->Initialize();
 	tin_->Initialize();
 
-
+	
 
 	bgm_->SoundPlay("Resources/bgm/title.mp3", 10000);
 	bgm_->SetVolume(0.6f);
@@ -293,7 +294,7 @@ void TitleScene::Update() {
 
 		UpdateSequence();
 
-
+		
 
 		tinTransform_->UpdateMatrix();// 行列更新
 		tinModel_->SetLocalMatrix(MakeIdentity4x4());// ローカル行列を単位行列に
@@ -311,24 +312,24 @@ void TitleScene::Update() {
 			mvModels_[i]->Update();// 更新
 		}
 
-
+		
 		//select
 		for (auto& sprite : selectSprites_) {
 			sprite->Update();
 		}
+		
 
+			if (sequenceState_ == SequenceState::Done && Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
+				if (selectNum != 0) {
 
-		if (sequenceState_ == SequenceState::Done && Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
-			if (selectNum != 0) {
+				
+				}
 
-
+				fade_->Start(Fade::Status::FadeOut, fadeTime_);
+				phase_ = Phase::kFadeOut;
 			}
-
-			fade_->Start(Fade::Status::FadeOut, fadeTime_);
-			phase_ = Phase::kFadeOut;
-		}
-
-
+		
+		
 
 		break;
 	case Phase::kFadeOut:
@@ -339,7 +340,9 @@ void TitleScene::Update() {
 
 				SceneManager::GetInstance()->ChangeScene("TUTORIAL");
 
-			} else {
+			}
+			else
+			{
 				SceneManager::GetInstance()->ChangeScene("GAME");
 			}
 
@@ -357,16 +360,17 @@ void TitleScene::Update() {
 
 	skyDome_->Update();
 
-
+	
 }
 
-void TitleScene::Draw() {
+void TitleScene::Draw()
+{
 	BaseScene::Draw();
 
 	DrawBackgroundSprite();
 	/// 背景スプライト描画
 
-
+	
 	DrawObject();
 	/// オブジェクト描画	
 
@@ -401,10 +405,10 @@ void TitleScene::Draw() {
 
 
 
-	DrawForegroundSprite();
+	DrawForegroundSprite();	
 	/// 前景スプライト描画	
 
-
+	
 	if (selectNum == 0) {
 		selectSprites_[0]->Draw();
 	} else if (selectNum == 1) {
@@ -416,36 +420,36 @@ void TitleScene::Draw() {
 	} else if (selectNum == 4) {
 		selectSprites_[4]->Draw();
 	}
-
+	
 	fade_->Draw();
 
 }
 
 void TitleScene::select() {
 
-
+	
 
 	Vector2 stickInput = Input::GetInstance()->GetLeftStick();
 
-	if (stickInput.x > 0.5f && stickReleased_) {
-		se1_->SoundPlay("Resources/se/select.mp3", 0);
-		se1_->SetVolume(0.5f);
-		selectNum++;
-		stickReleased_ = false;
-		mvTransforms_[5]->transform.rotate.z += 0.4f;
-	}
+		if (stickInput.x > 0.5f && stickReleased_) {
+			se1_->SoundPlay("Resources/se/select.mp3", 0);
+			se1_->SetVolume(0.5f);
+			selectNum++;
+			stickReleased_ = false;
+			mvTransforms_[5]->transform.rotate.z += 0.4f;
+		}
 
-	else if (stickInput.x < -0.5f && stickReleased_) {
-		se1_->SoundPlay("Resources/se/select.mp3", 0);
-		se1_->SetVolume(0.5f);
-		selectNum--;
-		stickReleased_ = false;
-		mvTransforms_[5]->transform.rotate.z -= 0.4f;
-	}
+		else if (stickInput.x < -0.5f && stickReleased_) {
+			se1_->SoundPlay("Resources/se/select.mp3", 0);
+			se1_->SetVolume(0.5f);
+			selectNum--;
+			stickReleased_ = false;
+			mvTransforms_[5]->transform.rotate.z -= 0.4f;
+		}
 
-	if (std::abs(stickInput.x) < 0.3f) {
-		stickReleased_ = true;
-	}
+		if (std::abs(stickInput.x) < 0.3f) {
+			stickReleased_ = true;
+		}
 	//}
 	if (selectNum >= 5) {
 		selectNum = 1;
@@ -454,46 +458,53 @@ void TitleScene::select() {
 		selectNum = 4;
 	}
 	if (selectNum == 1) {
-		textTransform_->transform.translate = { 1.0f, 0.1f , 0.0f };
+			textTransform_->transform.translate = { 1.0f, 0.1f , 0.0f };
 		if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
 			se1_->SoundPlay("Resources/se/select.mp3", 0);
 			se1_->SetVolume(0.5f);
 			mvTransforms_[4]->transform.translate.z -= 0.04f;
+			tutorial = true;
+			SceneManager::GetInstance()->GetTransitionData().easy = false;
+			SceneManager::GetInstance()->GetTransitionData().nomal = false;
+			SceneManager::GetInstance()->GetTransitionData().hard = false;
 		}
 	}
 	if (selectNum == 2) {
-		textTransform_->transform.translate = { 1.0f, 0.2f , 0.0f };
+			textTransform_->transform.translate = { 1.0f, 0.2f , 0.0f };
 		if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
 			se1_->SoundPlay("Resources/se/select.mp3", 0);
 			se1_->SetVolume(0.5f);
 			mvTransforms_[4]->transform.translate.z -= 0.04f;
-
-			DifficultyManager::GetInstance()->SetDifficulty(Difficulty::Easy);
-			DifficultyManager::GetInstance()->PreloadCSVFiles();
+			easy = true;
+			SceneManager::GetInstance()->GetTransitionData().easy = true;
+			SceneManager::GetInstance()->GetTransitionData().nomal = false;
+			SceneManager::GetInstance()->GetTransitionData().hard = false;
 		}
 	}
 	if (selectNum == 3) {
-		textTransform_->transform.translate = { 1.0f, 0.2f , 0.0f };
+			textTransform_->transform.translate = { 1.0f, 0.2f , 0.0f };
 		if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
 			se1_->SoundPlay("Resources/se/select.mp3", 0);
 			se1_->SetVolume(0.5f);
 			mvTransforms_[4]->transform.translate.z -= 0.04f;
-
-			DifficultyManager::GetInstance()->SetDifficulty(Difficulty::Normal);
-			DifficultyManager::GetInstance()->PreloadCSVFiles();
+			nomal = true;
+			SceneManager::GetInstance()->GetTransitionData().easy = false;
+			SceneManager::GetInstance()->GetTransitionData().nomal = true;
+			SceneManager::GetInstance()->GetTransitionData().hard = false;
 		}
 	}
 	if (selectNum == 4) {
-		textTransform_->transform.translate = { 1.0f, 0.2f , 0.0f };
+			textTransform_->transform.translate = { 1.0f, 0.2f , 0.0f };
 		if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
 			se1_->SoundPlay("Resources/se/select.mp3", 0);
 			se1_->SetVolume(0.5f);
 			mvTransforms_[4]->transform.translate.z -= 0.04f;
-
-			DifficultyManager::GetInstance()->SetDifficulty(Difficulty::Hard);
-			DifficultyManager::GetInstance()->PreloadCSVFiles();
+			hard = true;
+			SceneManager::GetInstance()->GetTransitionData().easy = false;
+			SceneManager::GetInstance()->GetTransitionData().nomal = false;
+			SceneManager::GetInstance()->GetTransitionData().hard = true;
 		}
-
+		
 	}
 }
 
@@ -512,9 +523,9 @@ void TitleScene::UpdateSequence() {
 		break;
 
 	case SequenceState::RotateDoor:
-
+		
 		if (mvTransforms_[1]->transform.rotate.y < 2.7f) {
-
+			
 			mvTransforms_[1]->transform.rotate.y += 0.05f;
 		} else {
 			mvTransforms_[1]->transform.rotate.y = 2.7f;
@@ -559,17 +570,17 @@ void TitleScene::UpdateSequence() {
 			mvTransforms_[1]->transform.rotate.y -= 0.05f;
 		} else {
 			mvTransforms_[1]->transform.rotate.y = 0.0f;
-			selectNum = 1;
+			selectNum = 1;          
 			stickReleased_ = false;
 			sequenceState_ = SequenceState::Done;
 		}
 		break;
 
 	case SequenceState::Done:
-
+	
 		select();
-		const float amplitude = 0.08f;
-		const float speed = 2.0f;
+		const float amplitude = 0.08f;     
+		const float speed = 2.0f;          
 		selectFloatTimer_ += 1.0f / 60.0f;
 		textTransform_->transform.translate.y = 0.2f + amplitude * sinf(selectFloatTimer_ * speed);
 		break;

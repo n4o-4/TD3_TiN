@@ -21,8 +21,6 @@
     <ClCompile Include="application\scene\SceneManager.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\object\Enemy.cpp" />
-    <ClCompile Include="DifficultyManager.cpp" />
-    <ClCompile Include="EnemySystem.cpp" />
     <ClCompile Include="engine\effect\BaseEffect.cpp" />
     <ClCompile Include="application\object\BaseEnemy.cpp" />
     <ClCompile Include="engine\effect\BoxFilter.cpp" />
@@ -112,8 +110,6 @@
     <ClInclude Include="application\scene\SceneManager.h" />
     <ClInclude Include="application\scene\TitleScene.h" />
     <ClInclude Include="application\object\Enemy.h" />
-    <ClInclude Include="DifficultyManager.h" />
-    <ClInclude Include="EnemySystem.h" />
     <ClInclude Include="engine\effect\BaseEffect.h" />
     <ClInclude Include="application\object\BaseEnemy.h" />
     <ClInclude Include="engine\effect\BoxFilter.h" />

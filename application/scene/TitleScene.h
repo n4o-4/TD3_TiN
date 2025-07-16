@@ -15,19 +15,19 @@
 #include "SceneManager.h"
 #include "Audio.h"
 #include "SkyDome.h" 
-#include "DifficultyManager.h"
 
 enum class SequenceState {
-	RotateDish,
-	RotateDoor,
-	MoveTinToFirst,
-	MoveTinToSecond,
+	RotateDish,       
+	RotateDoor,       
+	MoveTinToFirst,   
+	MoveTinToSecond,  
 	ResetDoorRotation,
-	Done
+	Done              
 };
 
 
-class TitleScene : public BaseScene {
+class TitleScene : public BaseScene
+{
 private:
 
 	std::unique_ptr<Sprite> sprite = nullptr;

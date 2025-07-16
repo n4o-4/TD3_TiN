@@ -25,8 +25,8 @@ void GameScene::Initialize() {
 	// スポットライト
 	spotLight = std::make_unique<SpotLight>();
 	spotLight->Initialize();
-	spotLight->direction_ = { 0.0f, -1.0f, 0.0f };
-	spotLight->position_ = { 0.0f, 2000.0f, 0.0f };
+	spotLight->direction_ = {0.0f, -1.0f, 0.0f};
+	spotLight->position_ = {0.0f, 2000.0f, 0.0f};
 	spotLight->intensity_ = 3.0f;
 	spotLight->decay_ = 1.6f;
 	spotLight->distance_ = 3200.0f;
@@ -51,18 +51,29 @@ void GameScene::Initialize() {
 	// 🔹 SetLockOnSystem() に std::move を使用
 	player_->SetLockOnSystem(lockOnSystem_.get()); // 🔹 `std::move()` を使わず `get()` でポインタを渡す
 	//========================================
-	enemySystem_ = std::make_unique<EnemySystem>();
-	enemySystem_->Initialize();
-	enemySystem_->SetPlayer(player_.get());
-	enemySystem_->SetLockOnSystem(lockOnSystem_.get());
-	const auto& enemies = enemySystem_->GetEnemies();
-	const auto& spawns = enemySystem_->GetSpawns();
+
+	EwaveCsvPaths_ = {
+		"./Resources/enemySpawn1.csv",
+		"./Resources/enemySpawn2.csv",
+		"./Resources/enemySpawn3.csv"};
+	NwaveCsvPaths_ = {
+		"./Resources/enemySpawn4.csv",
+		"./Resources/enemySpawn5.csv",
+		"./Resources/enemySpawn6.csv"};
+	HwaveCsvPaths_ = {
+		"./Resources/enemySpawn7.csv",
+		"./Resources/enemySpawn8.csv",
+		"./Resources/enemySpawn9.csv"};
+
+	SceneTransitionData &transitionData = SceneManager::GetInstance()->GetTransitionData();
+	easy_ = transitionData.easy;
+	nomal_ = transitionData.nomal;
+	hard_ = transitionData.hard;
+
 	// 敵出現
 	//========================================
-	if (DifficultyManager::GetInstance()->GetWaveCount() > 0) {
-		waveIndex_ = 0;
-		enemySystem_->LoadWaveData(waveIndex_, DifficultyManager::GetInstance()->GetWaveStream(waveIndex_));
-	}
+	LoadEnemyPopData(waveIndex_);
+
 	//========================================
 	// 当たり判定マネージャ
 	collisionManager_ = std::make_unique<CollisionManager>();
@@ -72,7 +83,7 @@ void GameScene::Initialize() {
 	// フォローカメラのターゲットを設定
 	cameraManager_->SetFollowCameraTarget(player_->GetWorldTransform());
 	// フォローカメラへ敵のリストの受け渡し
-	cameraManager_->GetFollowCamera()->SetEnemiesAndSpawns(&enemies, &spawns);
+	cameraManager_->GetFollowCamera()->SetEnemiesAndSpawns(&enemies_, &spawns_);
 
 	// アクティブカメラをフォローカメラに設定
 	cameraManager_->useFollowCamera_ = true;
@@ -81,8 +92,8 @@ void GameScene::Initialize() {
 
 	sceneManager_->GetPostEffect()->ApplyEffect("Blur", PostEffect::EffectType::MotionBlur);
 
-	dissolve_ = dynamic_cast<Dissolve*>(sceneManager_->GetPostEffect()->GetEffectData("dissolve"));
-	blur_ = dynamic_cast<MotionBlur*>(sceneManager_->GetPostEffect()->GetEffectData("Blur"));
+	dissolve_ = dynamic_cast<Dissolve *>(sceneManager_->GetPostEffect()->GetEffectData("dissolve"));
+	blur_ = dynamic_cast<MotionBlur *>(sceneManager_->GetPostEffect()->GetEffectData("Blur"));
 
 	///========================================
 	///		ライン描画
@@ -107,7 +118,7 @@ void GameScene::Initialize() {
 
 	if (easy_) {
 		easyBGM_->SoundPlay("Resources/bgm/easy.mp3", 9999);
-		easyBGM_->SetVolume(0.6f);
+		easyBGM_->SetVolume(0.6f); 
 	} else if (nomal_) {
 		nomalBGM_->SoundPlay("Resources/bgm/nomal.mp3", 9999);
 		nomalBGM_->SetVolume(0.6f);
@@ -120,29 +131,28 @@ void GameScene::Initialize() {
 	TextureManager::GetInstance()->LoadTexture("Resources/text/wave1.png");
 	wave1_ = std::make_unique<Sprite>();
 	wave1_->Initialize(SpriteCommon::GetInstance(), "Resources/text/wave1.png");
-	wave1_->SetTexSize({ 1280.0f, 720.0f });
-	wave1_->SetSize({ 1280.0f, 720.0f });
-	wave1_->SetPosition({ 0.0f, 0.0f });
+	wave1_->SetTexSize({1280.0f, 720.0f});
+	wave1_->SetSize({1280.0f, 720.0f});
+	wave1_->SetPosition({0.0f, 0.0f});
 
 	TextureManager::GetInstance()->LoadTexture("Resources/text/wave2.png");
 	wave2_ = std::make_unique<Sprite>();
 	wave2_->Initialize(SpriteCommon::GetInstance(), "Resources/text/wave2.png");
-	wave2_->SetTexSize({ 1280.0f, 720.0f });
-	wave2_->SetSize({ 1280.0f, 720.0f });
-	wave2_->SetPosition({ 0.0f, 0.0f });
+	wave2_->SetTexSize({1280.0f, 720.0f});
+	wave2_->SetSize({1280.0f, 720.0f});
+	wave2_->SetPosition({0.0f, 0.0f});
 
 	TextureManager::GetInstance()->LoadTexture("Resources/text/wave3.png");
 	wave3_ = std::make_unique<Sprite>();
 	wave3_->Initialize(SpriteCommon::GetInstance(), "Resources/text/wave3.png");
-	wave3_->SetTexSize({ 1280.0f, 720.0f });
-	wave3_->SetSize({ 1280.0f, 720.0f });
-	wave3_->SetPosition({ 0.0f, 0.0f });
+	wave3_->SetTexSize({1280.0f, 720.0f});
+	wave3_->SetSize({1280.0f, 720.0f});
+	wave3_->SetPosition({0.0f, 0.0f});
 	//========================================
-
 	// HUD
 	hud_ = std::make_unique<Hud>();
 	// 敵とスポーンの情報を最新に保つ
-	hud_->SetEnemiesAndSpawns(&enemies, &spawns);
+	hud_->SetEnemiesAndSpawns(&enemies_, &spawns_);
 	hud_->Initialize(cameraManager_->GetFollowCamera(), player_.get(), lockOnSystem_.get());
 
 	TextureManager::GetInstance()->LoadTexture("Resources/white.png");
@@ -217,10 +227,6 @@ void GameScene::Initialize() {
 	pointer->SetTexSize({ 64.0f, 64.0f });   // テクスチャの描画範囲
 	pointer->SetSize({ 64.0f, 64.0f });        // 描画サイズ
 	pointer->Update();
-	// その他初期値
-	waveDisplayTimer_ = 0;
-	currentWaveImageIndex_ = 0;
-	isGameClear_ = false;
 }
 ///=============================================================================
 ///						終了処理
@@ -239,14 +245,11 @@ void GameScene::Finalize() {
 	ground_.reset();
 
 	player_->Finalize();
-	lockOnSystem_.reset();
-	enemySystem_.reset();
-
 }
 ///=============================================================================
 ///						更新
 void GameScene::Update() {
-
+	
 	BaseScene::Update();
 
 	//========================================
@@ -372,9 +375,269 @@ void GameScene::Draw() {
 ///                        静的メンバ関数
 ///--------------------------------------------------------------
 ///                        敵の出現データの読み込み
+void GameScene::LoadEnemyPopData(int index) {
+	enemyPopCommands.str("");
+	enemyPopCommands.clear();
+	if (easy_) {
+		if (index < 0 || index >= EwaveCsvPaths_.size()) {
+			return;
+		}
+		std::ifstream file(EwaveCsvPaths_[index]);
+		assert(file.is_open());
+		enemyPopCommands << file.rdbuf();
+		file.close();
+	} else if (nomal_) {
+		if (index < 0 || index >= NwaveCsvPaths_.size()) {
+			return;
+		}
+		std::ifstream file(NwaveCsvPaths_[index]);
+		assert(file.is_open());
+		enemyPopCommands << file.rdbuf();
+		file.close();
+	} else if (hard_) {
+		if (index < 0 || index >= HwaveCsvPaths_.size()) {
+			return;
+		}
+		std::ifstream file(HwaveCsvPaths_[index]);
+		assert(file.is_open());
+		enemyPopCommands << file.rdbuf();
+		file.close();
+	}
+}
+///--------------------------------------------------------------
+///                        敵の出現データの更新
+void GameScene::UpdateEnemyPopCommands() {
+    // まず、遅延召喚キューから敵を召喚
+    int spawnedThisFrame = 0;
+    while (!delayedSpawnQueue_.empty() && spawnedThisFrame < spawnPerFrame_) {
+        DelayedSpawnData spawnData = delayedSpawnQueue_.front();
+        delayedSpawnQueue_.pop();
+        
+        // 実際の召喚処理
+        if (spawnData.type == "KUMO") {
+            SpawnEnemyKumo(spawnData.position, spawnData.hp);
+        } else if (spawnData.type == "BAT") {
+            SpawnEnemyBat(spawnData.position, spawnData.hp);
+        } else if (spawnData.type == "BOMB") {
+            SpawnEnemyBomb(spawnData.position, spawnData.hp);
+        } else if (spawnData.type == "CHAIR") {
+            SpawnEnemyChair(spawnData.position, spawnData.hp);
+        } else if (spawnData.type == "WM") {
+            SpawnEnemyWM(spawnData.position, spawnData.hp);
+        } else {
+            SpawnEnemy(spawnData.position);
+        }
+        
+        spawnedThisFrame++;
+    }
+    
+    // キューに残りがある場合は次のフレームに持ち越し
+    if (!delayedSpawnQueue_.empty()) {
+        return;
+    }
 
+    if (isWaiting_) {
+        --waitTimer_;
+        if (--waitTimer_ <= 0) {
+            isWaiting_ = false;
+        }
+        return;
+    }
+    std::string line;
 
-void GameScene::FadeInUpdate() {
+    while (getline(enemyPopCommands, line)) {
+
+        std::istringstream line_stream(line);
+
+        std::string word;
+
+        getline(line_stream, word, ',');
+
+        if (word.find("//") == 0) {
+            continue;
+        }
+        if (word.find("POP") == 0) {
+            getline(line_stream, word, ',');
+            float x = (float)std::atof(word.c_str());
+
+            getline(line_stream, word, ',');
+            float y = (float)std::atof(word.c_str());
+
+            getline(line_stream, word, ',');
+            float z = (float)std::atof(word.c_str());
+            SpawnSet(Vector3(x, y, z));
+
+            getline(line_stream, word, ',');
+            int hp = std::stoi(word);
+
+            getline(line_stream, word, ',');
+            int num = std::stoi(word);
+
+            getline(line_stream, word, ',');
+            currentSpawnType_ = word;
+
+            float spawnRangeX = 10.0f;
+            float spawnRangeY = 5.0f;
+            float spawnRangeZ = 10.0f;
+
+            std::uniform_real_distribution<float> randomX(x - spawnRangeX, x + spawnRangeX);
+            std::uniform_real_distribution<float> randomY(y - spawnRangeY, y + spawnRangeY);
+            std::uniform_real_distribution<float> randomZ(z - spawnRangeZ, z + spawnRangeZ);
+
+            // 敵をキューに追加（即座に召喚せず）
+            for (int i = 0; i < num; i++) {
+                DelayedSpawnData spawnData;
+                spawnData.hp = hp;
+                spawnData.type = currentSpawnType_;
+                
+                if (currentSpawnType_ == "KUMO") {
+                    spawnData.position = Vector3(randomX(gen), y, randomZ(gen));
+                } else if (currentSpawnType_ == "BAT") {
+                    spawnData.position = Vector3(randomX(gen), randomY(gen), randomZ(gen));
+                } else if (currentSpawnType_ == "BOMB") {
+                    spawnData.position = Vector3(randomX(gen), y, randomZ(gen));
+                } else if (currentSpawnType_ == "CHAIR") {
+                    spawnData.position = Vector3(randomX(gen), y, randomZ(gen));
+                } else if (currentSpawnType_ == "WM") {
+                    spawnData.position = Vector3(randomX(gen), y, randomZ(gen));
+                } else {
+                    spawnData.position = Vector3(x, y, z);
+                }
+                
+                delayedSpawnQueue_.push(spawnData);
+            }
+
+        } else if (word.find("WAIT") == 0) {
+
+            getline(line_stream, word, ',');
+
+            int32_t waitTime = atoi(word.c_str());
+
+            isWaiting_ = true;
+            waitTimer_ = waitTime;
+
+            break;
+        }
+    }
+    if (enemyPopCommands.eof()) {
+        waveReady_ = true;
+    }
+}
+///--------------------------------------------------------------
+///                        敵の出現
+void GameScene::SpawnEnemy(const Vector3 &position) {
+
+	std::unique_ptr<BaseEnemy> newEnemy = std::make_unique<Enemy>();
+	if (auto *enemyNormal = dynamic_cast<Enemy *>(newEnemy.get())) {
+		enemyNormal->Initialize();
+		enemyNormal->SetPosition(position);
+		enemyNormal->SetTarget(player_->GetWorldTransform());
+	}
+
+	enemies_.push_back(std::move(newEnemy));
+}
+
+void GameScene::SpawnEnemyKumo(const Vector3 &position, int hp) {
+	std::unique_ptr<BaseEnemy> newEnemy = std::make_unique<GroundTypeEnemy>();
+	if (auto *enemyNormal = dynamic_cast<GroundTypeEnemy *>(newEnemy.get())) {
+		enemyNormal->Initialize();
+		enemyNormal->SetPosition(position);
+		enemyNormal->SetTarget(player_->GetWorldTransform());
+		enemyNormal->SetHp(hp);
+	}
+
+	enemies_.push_back(std::move(newEnemy));
+}
+
+void GameScene::SpawnEnemyBat(const Vector3 &position, int hp) {
+	std::unique_ptr<BaseEnemy> newEnemy = std::make_unique<SkyTypeEnemy>();
+	if (auto *enemyNormal = dynamic_cast<SkyTypeEnemy *>(newEnemy.get())) {
+		enemyNormal->Initialize();
+		enemyNormal->SetPosition(position);
+		enemyNormal->SetTarget(player_->GetWorldTransform());
+		enemyNormal->SetHp(hp);
+	}
+
+	enemies_.push_back(std::move(newEnemy));
+}
+
+void GameScene::SpawnEnemyBomb(const Vector3 &position, int hp) {
+	std::unique_ptr<BaseEnemy> newEnemy = std::make_unique<GroundTypeEnemy2>();
+	if (auto *enemyNormal = dynamic_cast<GroundTypeEnemy2 *>(newEnemy.get())) {
+		enemyNormal->Initialize();
+		enemyNormal->SetPosition(position);
+		enemyNormal->SetTarget(player_->GetWorldTransform());
+		enemyNormal->SetHp(hp);
+	}
+
+	enemies_.push_back(std::move(newEnemy));
+}
+
+void GameScene::SpawnEnemyChair(const Vector3 &position, int hp) {
+	std::unique_ptr<BaseEnemy> newEnemy = std::make_unique<GroundTypeEnemy3>();
+	if (auto *enemyNormal = dynamic_cast<GroundTypeEnemy3 *>(newEnemy.get())) {
+		enemyNormal->Initialize();
+		enemyNormal->SetPosition(position);
+		enemyNormal->SetTarget(player_->GetWorldTransform());
+		enemyNormal->SetHp(hp);
+	}
+
+	enemies_.push_back(std::move(newEnemy));
+}
+
+void GameScene::SpawnEnemyWM(const Vector3 &position, int hp) {
+	std::unique_ptr<BaseEnemy> newEnemy = std::make_unique<GroundTypeEnemy4>();
+	if (auto *enemyNormal = dynamic_cast<GroundTypeEnemy4 *>(newEnemy.get())) {
+		enemyNormal->Initialize();
+		enemyNormal->SetPosition(position);
+		enemyNormal->SetTarget(player_->GetWorldTransform());
+		enemyNormal->SetHp(hp);
+	}
+
+	enemies_.push_back(std::move(newEnemy));
+}
+
+void GameScene::SpawnSet(const Vector3 &position) {
+	std::unique_ptr<BaseEnemy> newSpawn = std::make_unique<Spawn>();
+	if (auto *spawnNormal = dynamic_cast<Spawn *>(newSpawn.get())) {
+		spawnNormal->Initialize();
+		spawnNormal->SetPosition(position);
+		spawnNormal->SetTarget(player_->GetWorldTransform());
+	}
+
+	spawns_.push_back(std::move(newSpawn));
+}
+
+void GameScene::AvoidOverlap(std::vector<BaseEnemy *> &allEnemies, float avoidRadius) {
+	for (auto *self : allEnemies) {
+		Vector3 avoidance = {0.0f, 0.0f, 0.0f};
+
+		for (auto *other : allEnemies) {
+			if (self == other)
+				continue;
+
+			Vector3 diff = self->GetPosition() - other->GetPosition();
+			float dist = Length(diff);
+
+			if (dist < avoidRadius && dist > 0.001f) {
+				float weight = (avoidRadius - dist) / avoidRadius;
+				avoidance += Normalize(diff) * weight; // 近いほど強い反発
+			}
+		}
+
+		// 自然に回避加速度を適用
+		avoidance *= 0.05f; // 強度調整
+		self->AddAvoidance(avoidance);
+
+		// y軸固定（必要に応じて取り外し可能）
+		if (dynamic_cast<GroundTypeEnemy *>(self) || dynamic_cast<GroundTypeEnemy2 *>(self)) {
+			self->SetVelocityY(0.0f);
+		}
+	}
+}
+
+void GameScene::FadeInUpdate()
+{
 	if (fade_->IsFinished()) {
 
 		phase_ = Phase::kPlay;
@@ -394,10 +657,12 @@ void GameScene::FadeInUpdate() {
 	ground_->Update();
 }
 
-void GameScene::MainUpdate() {
+void GameScene::MainUpdate()
+{
 }
 
-void GameScene::PlayUpdate() {
+void GameScene::PlayUpdate()
+{
 	if (false) {
 		isGameClear_ = true;
 		isContinue_ = false;
@@ -426,7 +691,8 @@ void GameScene::PlayUpdate() {
 	if (waveDisplayTimer_ <= 0) {
 		player_->Update();
 		cameraManager_->GetFollowCamera()->enableUpdate_ = true;
-	} else {
+	}
+	else {
 		player_->StopMachineGunSound();
 		cameraManager_->GetFollowCamera()->enableUpdate_ = false;
 	}
@@ -441,29 +707,165 @@ void GameScene::PlayUpdate() {
 
 	//---------------------------------------
 	// 敵出現
-	// 敵システム更新（出現処理など含む）
-	// 敵システム全体のアップデート
-	enemySystem_->Update();
-	enemySystem_->AvoidOverlap(4.0f);
-	enemySystem_->RemoveDeadEnemies(lockOnSystem_.get(), player_.get());
-	enemySystem_->RemoveDeadSpawns(lockOnSystem_.get(), player_.get());
+	UpdateEnemyPopCommands();
+	// spawnの更新
+	for (const auto& Spawn : spawns_) {
+		Spawn->Update();
+	}
+	// Spawn
+	spawns_.erase(
+		std::remove_if(spawns_.begin(), spawns_.end(),
+			[this](const std::unique_ptr<BaseEnemy>& spawn) {
+				if (spawn->GetSpawnHp() <= 0) {
+					// ロックオンシステムから敵を削除
+					if (lockOnSystem_) {
+						lockOnSystem_->RemoveLockedEnemy(spawn.get());
+					}
 
-	// waveの進行
-	if (enemySystem_->GetSpawns().empty() && enemySystem_->IsWaveReady()) {
+					// 削除したエネミーをターゲットに持つプレイヤーのミサイルのターゲットをnullptrに設定
+					for (auto it = player_->GetBullets().begin(); it != player_->GetBullets().end(); ++it) {
+
+						if (it->get()->GetTarget() == spawn.get()) {
+							it->get()->SetTarget(nullptr);
+						}
+					}
+					return true;
+				}
+				return false;
+			}),
+		spawns_.end());
+	if (spawns_.empty() && waveReady_) {
 		player_->StopMachineGunSound();
-		player_->GetBullets().clear();
-		player_->GetMachineGunBullets().clear();
+		enemies_.clear();
 
 		waveIndex_++;
-		if (waveIndex_ < DifficultyManager::GetInstance()->GetWaveCount()) {
-			currentWaveImageIndex_ = waveIndex_ + 1;
-			waveDisplayTimer_ = waveDisplayDuration_;
-			enemySystem_->LoadWaveData(waveIndex_, DifficultyManager::GetInstance()->GetWaveStream(waveIndex_));
-		} else {
-			isGameClear_ = true;
+		if (easy_) {
+
+			if (waveIndex_ < EwaveCsvPaths_.size()) {
+
+				currentWaveImageIndex_ = waveIndex_ + 1;
+				waveDisplayTimer_ = waveDisplayDuration_;
+
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+
+				LoadEnemyPopData(waveIndex_);
+				waveReady_ = false;
+			}
+			else {
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+				isGameClear_ = true;
+			}
+		}
+		else if (nomal_) {
+			if (waveIndex_ < NwaveCsvPaths_.size()) {
+
+				currentWaveImageIndex_ = waveIndex_ + 1;
+				waveDisplayTimer_ = waveDisplayDuration_;
+
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+
+				LoadEnemyPopData(waveIndex_);
+				waveReady_ = false;
+			}
+			else {
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+				isGameClear_ = true;
+			}
+		}
+		else if (hard_) {
+			if (waveIndex_ < HwaveCsvPaths_.size()) {
+
+				currentWaveImageIndex_ = waveIndex_ + 1;
+				waveDisplayTimer_ = waveDisplayDuration_;
+
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+
+				LoadEnemyPopData(waveIndex_);
+				waveReady_ = false;
+			}
+			else {
+				player_->GetBullets().clear();
+				player_->GetMachineGunBullets().clear();
+				player_->StopMachineGunSound();
+				isGameClear_ = true;
+			}
 		}
 	}
+	// 敵リスト
+	for (const auto& enemy : enemies_) {
+		enemy->Update();
+	}
+	{
+		std::vector<BaseEnemy*> allEnemies;
+		for (const auto& e : enemies_) {
+			allEnemies.push_back(e.get());
+		}
+		for (const auto& s : spawns_) {
+			allEnemies.push_back(s.get());
+		}
+		AvoidOverlap(allEnemies, 4.0f);
+	}
+	// 敵の削除
+	enemies_.erase(
+		// 削除条件
+		std::remove_if(enemies_.begin(), enemies_.end(),
+			[this](const std::unique_ptr<BaseEnemy>& enemy) {
+				// HPが0以下の場合
+				if (enemy->GetHp() <= 0) {
+					// ロックオンシステムから敵を削除
+					if (lockOnSystem_) {
+						lockOnSystem_->RemoveLockedEnemy(enemy.get());
+					}
 
+					// 削除したエネミーをターゲットに持つプレイヤーのミサイルのターゲットをnullptrに設定
+					for (auto it = player_->GetBullets().begin(); it != player_->GetBullets().end(); ++it) {
+
+						if (it->get()->GetTarget() == enemy.get()) {
+							it->get()->SetTarget(nullptr);
+						}
+					}
+
+					return true; // 削除する
+				}
+				return false; // 削除しない
+			}),
+		// 実際に削除する
+		enemies_.end());
+
+	//---------------------------------------
+	// ロックオンの処理追加
+	if (lockOnSystem_) {
+		// プレイヤーの位置をロックオンシステムにセット
+		lockOnSystem_->SetPosition(player_->GetPosition());
+
+		// カメラがFollowCameraの場合、視点方向を設定
+		auto activeCamera = cameraManager_->GetActiveCamera();
+		if (auto followCamera = dynamic_cast<FollowCamera*>(activeCamera)) {
+			// カメラからの視点方向をロックオンシステムに設定
+			lockOnSystem_->SetViewDirection(followCamera->GetForwardDirection());
+		}
+		std::vector<BaseEnemy*> allTargets;
+		for (const auto& enemy : enemies_) {
+			allTargets.push_back(enemy.get());
+		}
+		for (const auto& spawn : spawns_) {
+			allTargets.push_back(spawn.get());
+		}
+
+		lockOnSystem_->DetectEnemiesRaw(allTargets);
+		lockOnSystem_->UpdateRaw(allTargets);
+
+	}
 
 	//---------------------------------------
 	// 当たり判定
@@ -471,15 +873,16 @@ void GameScene::PlayUpdate() {
 	collisionManager_->Reset();
 
 	// エネミー
-	for (auto& e : enemySystem_->GetEnemies()) {
-		collisionManager_->AddCollider(e.get());
-		for (auto& b : e->GetBullets()) {
-			collisionManager_->AddCollider(b.get());
+	for (auto& enemy : enemies_) {
+		collisionManager_->AddCollider(enemy.get());
+		// エネミーの弾リスト
+		for (auto& bullet : enemy->GetBullets()) {
+			collisionManager_->AddCollider(bullet.get());
 		}
 	}
 	// spwan
-	for (auto& s : enemySystem_->GetSpawns()) {
-		collisionManager_->AddCollider(s.get());
+	for (auto& spawn : spawns_) {
+		collisionManager_->AddCollider(spawn.get());
 	}
 	// プレイヤー
 	collisionManager_->AddCollider(player_.get());
@@ -496,9 +899,7 @@ void GameScene::PlayUpdate() {
 
 	//---------------------------------------
 	// HUD
-	const auto& enemies = enemySystem_->GetEnemies();
-	const auto& spawns = enemySystem_->GetSpawns();
-	hud_->SetEnemiesAndSpawns(&enemies, &spawns);
+	hud_->SetEnemiesAndSpawns(&enemies_, &spawns_);
 	hud_->Update();
 
 	//---------------------------------------
@@ -506,12 +907,19 @@ void GameScene::PlayUpdate() {
 	ParticleManager::GetInstance()->Update();
 
 	// wave sprite
-	wave1_->Update(); wave2_->Update(); wave3_->Update();
-	if (waveDisplayTimer_ > 0 && --waveDisplayTimer_ <= 0) {
-		currentWaveImageIndex_ = -1;
+	wave1_->Update();
+	wave2_->Update();
+	wave3_->Update();
+
+	if (waveDisplayTimer_ > 0) {
+		--waveDisplayTimer_;
+		if (waveDisplayTimer_ <= 0) {
+			currentWaveImageIndex_ = -1;
+		}
 	}
 
-	if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::START)) {
+	if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::START))
+	{
 		phase_ = Phase::kPose;
 
 		cameraManager_->GetFollowCamera()->enableUpdate_ = false; // カメラの更新を無効化
@@ -521,7 +929,8 @@ void GameScene::PlayUpdate() {
 
 }
 
-void GameScene::FadeOutUpdate() {
+void GameScene::FadeOutUpdate()
+{
 	//---------------------------------------
 		// `フェードアウトが終わった場合
 	if (fade_->IsFinished()) {
@@ -529,10 +938,12 @@ void GameScene::FadeOutUpdate() {
 		if (isGameClear_) {
 			// ゲームクリアシーンに遷移
 			SceneManager::GetInstance()->ChangeScene("CLEAR");
-		} else if (isGameOver_) {
+		}
+		else if (isGameOver_) {
 			// ゲームオーバーシーンに遷移
 			SceneManager::GetInstance()->ChangeScene("OVER");
-		} else {
+		}
+		else {
 			// タイトルシーンに遷移
 			SceneManager::GetInstance()->ChangeScene("TITLE");
 		}
@@ -551,7 +962,8 @@ void GameScene::FadeOutUpdate() {
 	ParticleManager::GetInstance()->Update();
 }
 
-void GameScene::PoseUpdate() {
+void GameScene::PoseUpdate()
+{
 	Vector2 pointerPos = pointer->GetPosition();
 
 	Vector2 vect = Input::GetInstance()->GetLeftStick();
@@ -560,27 +972,35 @@ void GameScene::PoseUpdate() {
 
 	pointer->SetPosition(pointerPos);
 
-	if (pointerPos.x < 640) {
-		if (pointerPos.y < 360) {
+	if (pointerPos.x < 640)
+	{
+		if (pointerPos.y < 360)
+		{
 			contGame->SetSize({ 665.6f, 166.4f });
 			returnTitle->SetSize({ 512.0f, 128.0f });
 
-			if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
+			if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A))
+			{
 				phase_ = Phase::kPlay;
 
 				cameraManager_->GetFollowCamera()->enableUpdate_ = true; // カメラの更新を有効化
 			}
-		} else if (pointerPos.y > 360) {
+		}
+		else if (pointerPos.y > 360)
+		{
 			returnTitle->SetSize({ 665.6f, 166.4f });
 			contGame->SetSize({ 512.0f, 128.0f });
 
-			if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A)) {
+			if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A))
+			{
 				SceneManager::GetInstance()->ChangeScene("TITLE");
 
 				cameraManager_->GetFollowCamera()->enableUpdate_ = true; // カメラの更新を有効化
 			}
 		}
-	} else {
+	}
+	else
+	{
 		contGame->SetSize({ 512.0f, 128.0f });
 		returnTitle->SetSize({ 512.0f, 128.0f });
 	}
@@ -591,7 +1011,8 @@ void GameScene::PoseUpdate() {
 	pointer->Update();
 }
 
-void GameScene::FadeInDraw() {
+void GameScene::FadeInDraw()
+{
 	DrawBackgroundSprite();
 	/// 背景スプライト描画
 
@@ -623,11 +1044,13 @@ void GameScene::FadeInDraw() {
 	DrawFade();
 }
 
-void GameScene::MainDraw() {
-
+void GameScene::MainDraw()
+{
+	
 }
 
-void GameScene::PlayDraw() {
+void GameScene::PlayDraw()
+{
 	DrawBackgroundSprite();
 	/// 背景スプライト描画
 
@@ -647,15 +1070,19 @@ void GameScene::PlayDraw() {
 		*spotLight.get());
 	//========================================
 	// spawnの描画
-	for (const auto& spawn : enemySystem_->GetSpawns()) {
-		spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+	for (const auto& Spawn : spawns_) {
+		Spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
 	}
 	//========================================
 	// 敵
-	for (const auto& enemy : enemySystem_->GetEnemies()) {
+	for (const auto& enemy : enemies_) {
 		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
 	}
 	//========================================
 	// プレイヤーの描画
@@ -677,9 +1104,11 @@ void GameScene::PlayDraw() {
 
 	if (currentWaveImageIndex_ == 1 && wave1_) {
 		wave1_->Draw();
-	} else if (currentWaveImageIndex_ == 2 && wave2_) {
+	}
+	else if (currentWaveImageIndex_ == 2 && wave2_) {
 		wave2_->Draw();
-	} else if (currentWaveImageIndex_ == 3 && wave3_) {
+	}
+	else if (currentWaveImageIndex_ == 3 && wave3_) {
 		wave3_->Draw();
 	}
 
@@ -688,7 +1117,8 @@ void GameScene::PlayDraw() {
 	pose->Draw();
 }
 
-void GameScene::FadeOutDraw() {
+void GameScene::FadeOutDraw()
+{
 	DrawBackgroundSprite();
 	/// 背景スプライト描画
 
@@ -708,9 +1138,11 @@ void GameScene::FadeOutDraw() {
 		*spotLight.get());
 	//========================================
 	// 敵
-	for (const auto& enemy : enemySystem_->GetEnemies()) {
+	for (const auto& enemy : enemies_) {
 		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
 	}
 	//========================================
 	// プレイヤーの描画
@@ -738,7 +1170,8 @@ void GameScene::FadeOutDraw() {
 	DrawFade();
 }
 
-void GameScene::PoseDraw() {
+void GameScene::PoseDraw()
+{
 	DrawBackgroundSprite();
 	/// 背景スプライト描画
 
@@ -758,15 +1191,19 @@ void GameScene::PoseDraw() {
 		*spotLight.get());
 	//========================================
 	// spawnの描画
-	for (const auto& spawn : enemySystem_->GetSpawns()) {
-		spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+	for (const auto& Spawn : spawns_) {
+		Spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
 	}
 	//========================================
 	// 敵
-	for (const auto& enemy : enemySystem_->GetEnemies()) {
+	for (const auto& enemy : enemies_) {
 		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(),
+			*pointLight.get(),
+			*spotLight.get());
 	}
 	//========================================
 	// プレイヤーの描画
@@ -788,9 +1225,11 @@ void GameScene::PoseDraw() {
 
 	if (currentWaveImageIndex_ == 1 && wave1_) {
 		wave1_->Draw();
-	} else if (currentWaveImageIndex_ == 2 && wave2_) {
+	}
+	else if (currentWaveImageIndex_ == 2 && wave2_) {
 		wave2_->Draw();
-	} else if (currentWaveImageIndex_ == 3 && wave3_) {
+	}
+	else if (currentWaveImageIndex_ == 3 && wave3_) {
 		wave3_->Draw();
 	}
 

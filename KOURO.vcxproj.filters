@@ -322,8 +322,6 @@
     <ClCompile Include="engine\base\ViewProjection.cpp">
       <Filter>engine\base</Filter>
     </ClCompile>
-    <ClCompile Include="DifficultyManager.cpp" />
-    <ClCompile Include="EnemySystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\base\MyGame.h">
@@ -605,8 +603,6 @@
     <ClInclude Include="engine\base\ViewProjection.h">
       <Filter>engine\base</Filter>
     </ClInclude>
-    <ClInclude Include="DifficultyManager.h" />
-    <ClInclude Include="EnemySystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
