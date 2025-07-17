@@ -155,7 +155,6 @@ private:
 	std::stringstream enemyPopCommands;
 	//
 	std::unique_ptr<EnemySystem> enemySystem_;
-
 	//========================================
 	// 当たり判定マネージャ
 	std::unique_ptr<CollisionManager> collisionManager_ = nullptr;

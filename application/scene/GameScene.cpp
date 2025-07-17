@@ -55,8 +55,7 @@ void GameScene::Initialize() {
 	enemySystem_->Initialize();
 	enemySystem_->SetPlayer(player_.get());
 	enemySystem_->SetLockOnSystem(lockOnSystem_.get());
-	const auto& enemies = enemySystem_->GetEnemies();
-	const auto& spawns = enemySystem_->GetSpawns();
+	
 	// 敵出現
 	//========================================
 	DifficultyManager::GetInstance()->PreloadCSVFiles();
@@ -86,7 +85,7 @@ void GameScene::Initialize() {
 	// フォローカメラのターゲットを設定
 	cameraManager_->SetFollowCameraTarget(player_->GetWorldTransform());
 	// フォローカメラへ敵のリストの受け渡し
-	cameraManager_->GetFollowCamera()->SetEnemiesAndSpawns(&enemies, &spawns);
+	cameraManager_->GetFollowCamera()->SetEnemiesAndSpawns(&enemySystem_->GetEnemies(), &enemySystem_->GetSpawns());
 
 	// アクティブカメラをフォローカメラに設定
 	cameraManager_->useFollowCamera_ = true;
@@ -156,7 +155,7 @@ void GameScene::Initialize() {
 	// HUD
 	hud_ = std::make_unique<Hud>();
 	// 敵とスポーンの情報を最新に保つ
-	hud_->SetEnemiesAndSpawns(&enemies, &spawns);
+	hud_->SetEnemiesAndSpawns(&enemySystem_->GetEnemies(), &enemySystem_->GetSpawns());
 	hud_->Initialize(cameraManager_->GetFollowCamera(), player_.get(), lockOnSystem_.get());
 
 	TextureManager::GetInstance()->LoadTexture("Resources/white.png");
@@ -554,9 +553,8 @@ void GameScene::PlayUpdate() {
 
 	//---------------------------------------
 	// HUD
-	const auto& enemies = enemySystem_->GetEnemies();
-	const auto& spawns = enemySystem_->GetSpawns();
-	hud_->SetEnemiesAndSpawns(&enemies, &spawns);
+	
+	hud_->SetEnemiesAndSpawns(&enemySystem_->GetEnemies(), &enemySystem_->GetSpawns());
 	hud_->Update();
 
 	//---------------------------------------
@@ -729,7 +727,7 @@ void GameScene::PlayDraw() {
 	//========================================
 	// HUD
 	hud_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection());
-
+	hud_->Update();
 	DrawForegroundSprite();
 	/// 前景スプライト描画
 
