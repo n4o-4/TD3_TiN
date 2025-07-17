@@ -75,6 +75,7 @@ void GameScene::Initialize() {
 	if (DifficultyManager::GetInstance()->GetWaveCount() > 0) {
 		waveIndex_ = 0;
 		enemySystem_->LoadWaveData(waveIndex_, DifficultyManager::GetInstance()->GetWaveStream(waveIndex_));
+		
 	}
 	//========================================
 	// 当たり判定マネージャ
@@ -359,7 +360,25 @@ void GameScene::Update() {
 
 		ImGui::TreePop();
 	}
+	if (ImGui::TreeNode("Enemy Transform Debug")) {
+		for (const auto& enemy : enemySystem_->GetEnemies()) {
+			const auto& pos = enemy->GetPosition();
+			const auto& scale = enemy->GetWorldTransform()->transform.scale;
+			ImGui::Text("Enemy Pos: (%.1f, %.1f, %.1f)", pos.x, pos.y, pos.z);
+			ImGui::Text("Enemy Scale: (%.1f, %.1f, %.1f)", scale.x, scale.y, scale.z);
+			ImGui::Separator();
+		}
 
+		for (const auto& spawn : enemySystem_->GetSpawns()) {
+			const auto& pos = spawn->GetPosition();
+			const auto& scale = spawn->GetWorldTransform()->transform.scale;
+			ImGui::Text("Spawn Pos: (%.1f, %.1f, %.1f)", pos.x, pos.y, pos.z);
+			ImGui::Text("Spawn Scale: (%.1f, %.1f, %.1f)", scale.x, scale.y, scale.z);
+			ImGui::Separator();
+		}
+
+		ImGui::TreePop();
+	}
 	if (ImGui::TreeNode("Enemy Debug")) {
 		ImGui::Text("Enemy Count: %zu", enemySystem_->GetEnemies().size());
 		ImGui::TreePop();
@@ -680,13 +699,13 @@ void GameScene::PlayDraw() {
 	// spawnの描画
 	for (const auto& spawn : enemySystem_->GetSpawns()) {
 		spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(), *pointLight.get(), *spotLight.get());
 	}
 	//========================================
 	// 敵
 	for (const auto& enemy : enemySystem_->GetEnemies()) {
 		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(), *pointLight.get(), *spotLight.get());
 	}
 	//========================================
 	// プレイヤーの描画
@@ -741,7 +760,7 @@ void GameScene::FadeOutDraw() {
 	// 敵
 	for (const auto& enemy : enemySystem_->GetEnemies()) {
 		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(), *pointLight.get(), *spotLight.get());
 	}
 	//========================================
 	// プレイヤーの描画
@@ -791,13 +810,13 @@ void GameScene::PoseDraw() {
 	// spawnの描画
 	for (const auto& spawn : enemySystem_->GetSpawns()) {
 		spawn->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(), *pointLight.get(), *spotLight.get());
 	}
 	//========================================
 	// 敵
 	for (const auto& enemy : enemySystem_->GetEnemies()) {
 		enemy->Draw(cameraManager_->GetActiveCamera()->GetViewProjection(),
-			*directionalLight, *pointLight, *spotLight);
+			*directionalLight.get(), *pointLight.get(), *spotLight.get());
 	}
 	//========================================
 	// プレイヤーの描画

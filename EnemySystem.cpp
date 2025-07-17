@@ -44,26 +44,31 @@ void EnemySystem::LoadWaveData(int index, std::istringstream data) {
 // ƒtƒŒ[ƒ€–ˆ‚Ì“Gˆ—
 void EnemySystem::Update() {
     int spawnedThisFrame = 0;
-    while (!delayedSpawnQueue_.empty() && spawnedThisFrame < spawnPerFrame_) {
-        DelayedSpawnData spawnData = delayedSpawnQueue_.front();
-        delayedSpawnQueue_.pop();
 
-        if (spawnData.type == "KUMO") {
-            SpawnEnemyRC(spawnData.position, spawnData.hp);
-        } else if (spawnData.type == "BAT") {
-            SpawnEnemyIron(spawnData.position, spawnData.hp);
-        } else if (spawnData.type == "BOMB") {
-            SpawnEnemyRefrigerator(spawnData.position, spawnData.hp);
-        } else if (spawnData.type == "CHAIR") {
-            SpawnEnemyChair(spawnData.position, spawnData.hp);
-        } else if (spawnData.type == "WM") {
-            SpawnEnemyWM(spawnData.position, spawnData.hp);
+    if (!delayedSpawnQueue_.empty()) {
+        while (!delayedSpawnQueue_.empty() && spawnedThisFrame < spawnPerFrame_) {
+            DelayedSpawnData spawnData = delayedSpawnQueue_.front();
+            delayedSpawnQueue_.pop();
+
+            if (spawnData.type == "KUMO") {
+                SpawnEnemyRC(spawnData.position, spawnData.hp);
+            } else if (spawnData.type == "BAT") {
+                SpawnEnemyIron(spawnData.position, spawnData.hp);
+            } else if (spawnData.type == "BOMB") {
+                SpawnEnemyRefrigerator(spawnData.position, spawnData.hp);
+            } else if (spawnData.type == "CHAIR") {
+                SpawnEnemyChair(spawnData.position, spawnData.hp);
+            } else if (spawnData.type == "WM") {
+                SpawnEnemyWM(spawnData.position, spawnData.hp);
+            }
+
+            spawnedThisFrame++;
         }
 
-        spawnedThisFrame++;
+       
+        ParseEnemyPopCommands();
+        return;
     }
-
-    if (!delayedSpawnQueue_.empty()) return;
 
     if (isWaiting_) {
         if (--waitTimer_ <= 0) {
@@ -72,6 +77,7 @@ void EnemySystem::Update() {
         return;
     }
 
+    
     ParseEnemyPopCommands();
 }
 
