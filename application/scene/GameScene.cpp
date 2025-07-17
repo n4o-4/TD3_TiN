@@ -514,7 +514,15 @@ void GameScene::PlayUpdate() {
 		}
 	}
 
+	// 敵の更新
+	for (auto& enemy : enemySystem_->GetEnemies()) {
+		enemy->Update();
+	}
 
+	// スポーンブロックの更新
+	for (auto& spawn : enemySystem_->GetSpawns()) {
+		spawn->Update();
+	}
 	//---------------------------------------
 	// 当たり判定
 	// リセット
