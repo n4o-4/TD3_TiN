@@ -155,8 +155,8 @@ void GameScene::Initialize() {
 	// HUD
 	hud_ = std::make_unique<Hud>();
 	// 敵とスポーンの情報を最新に保つ
-	hud_->SetEnemiesAndSpawns(&enemySystem_->GetEnemies(), &enemySystem_->GetSpawns());
 	hud_->Initialize(cameraManager_->GetFollowCamera(), player_.get(), lockOnSystem_.get());
+	hud_->SetEnemiesAndSpawns(&enemySystem_->GetEnemies(), &enemySystem_->GetSpawns());
 
 	TextureManager::GetInstance()->LoadTexture("Resources/white.png");
 	TextureManager::GetInstance()->LoadTexture("Resources/operation2.png");
@@ -378,6 +378,15 @@ void GameScene::Update() {
 
 		ImGui::TreePop();
 	}
+	const auto& lockedEnemies = lockOnSystem_->GetLockedEnemies();
+	ImGui::Begin("LockOn Debug");
+	ImGui::Text("Locked Enemy Count: %d", lockedEnemies.size());
+
+	if (!lockedEnemies.empty()) {
+		
+	}
+	ImGui::End();
+
 	if (ImGui::TreeNode("Enemy Debug")) {
 		ImGui::Text("Enemy Count: %zu", enemySystem_->GetEnemies().size());
 		ImGui::TreePop();
@@ -502,7 +511,7 @@ void GameScene::PlayUpdate() {
 		player_->StopMachineGunSound();
 		player_->GetBullets().clear();
 		player_->GetMachineGunBullets().clear();
-
+		enemySystem_->ClearAllEnemies();
 		waveIndex_++;
 		if (waveIndex_ < DifficultyManager::GetInstance()->GetWaveCount()) {
 			currentWaveImageIndex_ = waveIndex_ + 1;

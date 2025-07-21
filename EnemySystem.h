@@ -49,6 +49,8 @@ public:
     // ìÔà’ìxê›íË
     void SetDifficulty(bool easy, bool normal, bool hard);
 
+    void ClearAllEnemies();
+
     void RemoveDeadSpawns(LockOn* lockOn, Player* player);
     void RemoveDeadEnemies(LockOn* lockOn, Player* player);
     bool IsWaveReady() const { return waveReady_; }

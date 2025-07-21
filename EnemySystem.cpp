@@ -31,6 +31,12 @@ void EnemySystem::SetDifficulty(bool easy, bool normal, bool hard) {
     hard_ = hard;
 }
 
+void EnemySystem::ClearAllEnemies() {
+    enemies_.clear();
+    spawns_.clear();
+    
+}
+
 // ウェーブデータを読み込む
 void EnemySystem::LoadWaveData(int index, std::istringstream data) {
     
