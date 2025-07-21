@@ -506,6 +506,30 @@ void GameScene::PlayUpdate() {
 	enemySystem_->RemoveDeadEnemies(lockOnSystem_.get(), player_.get());
 	enemySystem_->RemoveDeadSpawns(lockOnSystem_.get(), player_.get());
 
+	if (lockOnSystem_) {
+		// プレイヤーの位置をロックオンシステムにセット
+		lockOnSystem_->SetPosition(player_->GetPosition());
+
+		// カメラがFollowCameraの場合、視点方向を設定
+		auto activeCamera = cameraManager_->GetActiveCamera();
+		if (auto followCamera = dynamic_cast<FollowCamera*>(activeCamera)) {
+			// カメラからの視点方向をロックオンシステムに設定
+			lockOnSystem_->SetViewDirection(followCamera->GetForwardDirection());
+		}
+		std::vector<BaseEnemy*> allTargets;
+		for (const auto& enemy : enemySystem_->GetEnemies()) {
+			allTargets.push_back(enemy.get());
+		}
+		for (const auto& spawn : enemySystem_->GetSpawns()) {
+			allTargets.push_back(spawn.get());
+		}
+
+		lockOnSystem_->DetectEnemiesRaw(allTargets);
+		lockOnSystem_->UpdateRaw(allTargets);
+
+	}
+	
+
 	// waveの進行
 	if (enemySystem_->GetSpawns().empty() && enemySystem_->IsWaveReady()) {
 		player_->StopMachineGunSound();
@@ -738,6 +762,9 @@ void GameScene::PlayDraw() {
 	hud_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection());
 	hud_->Update();
 	DrawForegroundSprite();
+
+	
+
 	/// 前景スプライト描画
 
 	if (currentWaveImageIndex_ == 1 && wave1_) {
