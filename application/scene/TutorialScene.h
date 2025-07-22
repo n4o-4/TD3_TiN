@@ -175,7 +175,5 @@ public: // メンバ関数
 
 	void Draw();
 
-
-
 };
 
