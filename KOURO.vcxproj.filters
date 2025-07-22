@@ -545,9 +545,6 @@
     <ClInclude Include="application\object\LockOnMarker.h">
       <Filter>application\object</Filter>
     </ClInclude>
-    <ClInclude Include="application\object\Player.h">
-      <Filter>application\object</Filter>
-    </ClInclude>
     <ClInclude Include="application\object\PlayerMachineGun.h">
       <Filter>application\object</Filter>
     </ClInclude>
@@ -607,6 +604,8 @@
     </ClInclude>
     <ClInclude Include="DifficultyManager.h" />
     <ClInclude Include="EnemySystem.h" />
+    <ClInclude Include="application\object\Player.h" />
+    <ClInclude Include="application\object\PlayerConstant.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

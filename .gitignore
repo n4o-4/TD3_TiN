@@ -20,6 +20,7 @@ mono_crash.*
 
 [Ww][Ii][Nn]32/
 generated/
+.vscode/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
