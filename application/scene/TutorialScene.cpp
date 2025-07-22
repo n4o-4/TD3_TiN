@@ -140,6 +140,14 @@ void TutorialScene::Update() {
 		break;
 
 	case Phase::kPlay:
+
+		// Bボタンでタイトルへ戻る
+		if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::B)) {
+			isGameOver_ = false; // 明示的にfalseをセット（戻るだけなので）
+			phase_ = Phase::kFadeOut;
+			fade_->Start(Fade::Status::FadeOut, fadeTime_);
+		}
+
 		if (player_->GetHp() <= 0) {
 			isGameOver_ = true;
 			phase_ = Phase::kFadeOut;
