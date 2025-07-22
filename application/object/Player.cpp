@@ -45,7 +45,7 @@ void Player::Initialize() {
 	// 初期位置を設定
 	objectTransform_ = std::make_unique<WorldTransform>();
 	objectTransform_->Initialize();
-	objectTransform_->transform.translate = {0.0f, initialY_, kInitialZ_};
+	objectTransform_->transform.translate = {0.0f, initialY_, PlayerConstant::kInitialZ};
 
 	doorObjectTransform_ = std::make_unique<WorldTransform>();
 	doorObjectTransform_->Initialize();
@@ -73,8 +73,8 @@ void Player::Initialize() {
 
 	explosionEmitter_ = std::make_unique<ParticleEmitter>();
 	explosionEmitter_->Initialize("missileSmoke");
-	explosionEmitter_->SetParticleCount(kExplosionParticleCount_);
-	explosionEmitter_->SetFrequency(kExplosionFrequency_);
+	explosionEmitter_->SetParticleCount(PlayerConstant::kExplosionParticleCount);
+	explosionEmitter_->SetFrequency(PlayerConstant::kExplosionFrequency);
 	explosionEmitter_->SetLifeTimeRange({1.0f, 1.0f});
 
 	smokeEmitter_ = std::make_unique<ParticleEmitter>();
@@ -143,7 +143,7 @@ void Player::Update() {
 		invincibleTimer_--;
 
 		// 点滅（フレームごとに表示・非表示切り替え）
-		if (invincibleTimer_ % kInvincibleBlinkInterval_ == 0) { // 10フレームごとに切り替え
+		if (invincibleTimer_ % PlayerConstant::kInvincibleBlinkInterval == 0) { // 10フレームごとに切り替え
 			isVisible_ = !isVisible_;
 		}
 
@@ -303,7 +303,7 @@ Vector3 Player::GetMovementInput() {
 	currentInputMagnitude_ = Length(rawInputDirection);
 	if (currentInputMagnitude_ > 1.0f) {
 		currentInputMagnitude_ = 1.0f;
-	} else if (currentInputMagnitude_ < kVelocityStopThreshold_) { // ごくわずかな入力は0として扱う
+	} else if (currentInputMagnitude_ < PlayerConstant::kVelocityStopThreshold) { // ごくわずかな入力は0として扱う
 		currentInputMagnitude_ = 0.0f;
 	}
 
@@ -330,7 +330,7 @@ void Player::UpdateMove(Vector3 direction) { // direction は正規化された�
 		currentAccelerationRate *= boostAccelerationFactor_;
 	}
 
-	if (currentInputMagnitude_ > kVelocityStopThreshold_) {
+	if (currentInputMagnitude_ > PlayerConstant::kVelocityStopThreshold) {
 		float controlFactor = isJumping_ ? airControlFactor_ : 1.0f;
 		acceleration_ = direction * (currentAccelerationRate * controlFactor * currentInputMagnitude_);
 	} else {
@@ -341,7 +341,7 @@ void Player::UpdateMove(Vector3 direction) { // direction は正規化された�
 
 	float targetSpeedLimit;
 	if (isQuickBoosting_) {
-		targetSpeedLimit = maxSpeed_ * kQuickBoostSpeedMultiplier_;
+		targetSpeedLimit = maxSpeed_ * PlayerConstant::kQuickBoostSpeedMultiplier;
 	} else if (isBoosting_) {
 		// 通常ブースト時は、基本のブースト速度と、入力の大きさを考慮した速度の大きい方を採用し、
 		// さらに限界突破用の最大速度を設定
@@ -359,17 +359,17 @@ void Player::UpdateMove(Vector3 direction) { // direction は正規化された�
 		if (isQuickBoosting_ || isBoosting_) {
 			velocity_ = Normalize(velocity_) * targetSpeedLimit;
 		} else {
-			float slowedSpeed = currentSpeed * kPostBoostSlowdownRate_;
+			float slowedSpeed = currentSpeed * PlayerConstant::kPostBoostSlowdownRate;
 			velocity_ = Normalize(velocity_) * std::max(targetSpeedLimit, slowedSpeed);
 		}
 	}
 
 	// 移動が入力されているときだけ向きを変更
-	if (Length(velocity_) > kVelocityStopThreshold_) {
+	if (Length(velocity_) > PlayerConstant::kVelocityStopThreshold) {
 		distinationRotateY_ = std::atan2(velocity_.x, velocity_.z);
 	}
 
-	objectTransform_->transform.rotate.y = LerpShortAngle(objectTransform_->transform.rotate.y, distinationRotateY_, kRotationLerpFactor_);
+	objectTransform_->transform.rotate.y = LerpShortAngle(objectTransform_->transform.rotate.y, distinationRotateY_, PlayerConstant::kRotationLerpFactor);
 
 	// 高速移動中は進行方向に傾ける
 	float targetTilt = 0.0f;
@@ -377,10 +377,10 @@ void Player::UpdateMove(Vector3 direction) { // direction は正規化された�
 		// 機体のローカルX軸（横移動）成分で傾ける
 		Matrix4x4 invRotateMatrix = Inverse(MakeRotateYMatrix(objectTransform_->transform.rotate.y));
 		Vector3 localVelocity = TransformNormal(velocity_, invRotateMatrix);
-		targetTilt = localVelocity.x * kMovementTiltFactor_;
-		targetTilt = std::clamp(targetTilt, -kMovementMaxTilt_, kMovementMaxTilt_);
+		targetTilt = localVelocity.x * PlayerConstant::kMovementTiltFactor;
+		targetTilt = std::clamp(targetTilt, -PlayerConstant::kMovementMaxTilt, PlayerConstant::kMovementMaxTilt);
 	}
-	objectTransform_->transform.rotate.z = fLerp(objectTransform_->transform.rotate.z, targetTilt, kMovementTiltLerpFactor_);
+	objectTransform_->transform.rotate.z = fLerp(objectTransform_->transform.rotate.z, targetTilt, PlayerConstant::kMovementTiltLerpFactor);
 
 	objectTransform_->transform.translate += velocity_;
 
@@ -396,14 +396,14 @@ void Player::UpdateJump() {
 		if (Input::GetInstance()->TriggerGamePadButton(Input::GamePadButton::A) || // ゲームパッド Aボタン
 			Input::GetInstance()->Triggerkey(DIK_SPACE)) {						   // キーボード スペースキー
 			isJumping_ = true;
-			jumpVelocity_ = kJumpInitialVelocity_;
+			jumpVelocity_ = PlayerConstant::kJumpInitialVelocity;
 			fallSpeed_ = 0.0f;
 		}
 	}
 
 	if (isJumping_) {
 		objectTransform_->transform.translate.y += jumpVelocity_;
-		jumpVelocity_ -= kJumpVelocityDecay_;
+		jumpVelocity_ -= PlayerConstant::kJumpVelocityDecay;
 
 		if (jumpVelocity_ <= 0.0f) {
 			jumpVelocity_ = 0.0f;
@@ -507,7 +507,7 @@ void Player::UpdateMachineGunAndHeat() {
 			isOverheated_ = true;
 			overheatTimer_ = overheatRecoveryTime_;
 		}
-		machineGunCooldown_ = kMachineGunFireInterval_;
+		machineGunCooldown_ = PlayerConstant::kMachineGunFireInterval;
 	}
 
 	if (!isShootingMachineGun_) {
@@ -557,12 +557,12 @@ void Player::Shoot() {
 			Vector3 initialVelocity;
 			if (lockLevel == LockOn::LockLevel::PreciseLock) {
 				// 精密ロックオン：より直線的な初速
-				initialVelocity = Normalize((direction * 0.7f) + Vector3{0.0f, 0.3f, 0.0f});
-				initialVelocity = initialVelocity * 0.35f; // 初速は少し速く
+				initialVelocity = Normalize((direction * PlayerConstant::kPreciseLockDirectionFactor) + Vector3{0.0f, PlayerConstant::kPreciseLockVerticalFactor, 0.0f});
+				initialVelocity = initialVelocity * PlayerConstant::kPreciseLockInitialSpeed; // 初速は少し速く
 			} else {
 				// 簡易ロックオン：上向きに弧を描く初速
-				initialVelocity = Normalize((direction * 0.3f) + Vector3{0.0f, 0.7f, 0.0f});
-				initialVelocity = initialVelocity * 0.25f; // 初速は少し遅め
+				initialVelocity = Normalize((direction * PlayerConstant::kSimpleLockDirectionFactor) + Vector3{0.0f, PlayerConstant::kSimpleLockVerticalFactor, 0.0f});
+				initialVelocity = initialVelocity * PlayerConstant::kSimpleLockInitialSpeed; // 初速は少し遅め
 			}
 
 			// 新しい弾を作成してターゲットを設定
@@ -654,11 +654,11 @@ bool Player::ProcessActiveQuickBoost() {
 
 	quickBoostFrames_--;
 
-	if (Length(velocity_) > kVelocityStopThreshold_) { // わずかでも速度があれば方向を取る
+	if (Length(velocity_) > PlayerConstant::kVelocityStopThreshold) { // わずかでも速度があれば方向を取る
 		Vector3 boostDirection = Normalize(velocity_);
 		boostDirection.y = 0.0f;
 
-		float boostSpeed = maxSpeed_ * kQuickBoostSpeedMultiplier_; // 定数使用
+		float boostSpeed = maxSpeed_ * PlayerConstant::kQuickBoostSpeedMultiplier; // 定数使用
 
 		// ブースト後半で速度減衰
 		if (quickBoostFrames_ < maxQuickBoostFrames_ / 2) {
@@ -670,7 +670,7 @@ bool Player::ProcessActiveQuickBoost() {
 
 	if (quickBoostFrames_ <= 0) {
 		isQuickBoosting_ = false;
-		velocity_ *= kQuickBoostSpeedRetainFactor_; // 定数使用
+		velocity_ *= PlayerConstant::kQuickBoostSpeedRetainFactor; // 定数使用
 	}
 	return true; // クイックブースト処理を行った
 }
@@ -701,7 +701,7 @@ bool Player::HandleQuickBoostActivation() {
 		rawBoostDirection.z += stickInput.y;
 
 		Vector3 worldBoostDirection = {0.0f, 0.0f, 0.0f};
-		if (Length(rawBoostDirection) > kVelocityStopThreshold_) {
+		if (Length(rawBoostDirection) > PlayerConstant::kVelocityStopThreshold) {
 			worldBoostDirection = Normalize(rawBoostDirection);
 			if (followCamera_) {
 				Matrix4x4 rotateMatrix = MakeRotateMatrix(followCamera_->GetViewProjection().transform.rotate);
@@ -716,7 +716,7 @@ bool Player::HandleQuickBoostActivation() {
 			}
 		}
 		worldBoostDirection.y = 0.0f;
-		if (Length(worldBoostDirection) < kVelocityStopThreshold_) {
+		if (Length(worldBoostDirection) < PlayerConstant::kVelocityStopThreshold) {
 			return false;
 		}
 		worldBoostDirection = Normalize(worldBoostDirection);
@@ -731,7 +731,7 @@ bool Player::HandleQuickBoostActivation() {
 			quickBoostChargeCooldown_ = quickBoostChargeTime_;
 		}
 
-		velocity_ = worldBoostDirection * (maxSpeed_ * kQuickBoostSpeedMultiplier_ * 0.8f);
+		velocity_ = worldBoostDirection * (maxSpeed_ * PlayerConstant::kQuickBoostSpeedMultiplier * 0.8f);
 		// クイックブースト起動成功
 		return true;
 	}
@@ -742,7 +742,7 @@ bool Player::HandleQuickBoostActivation() {
 void Player::RecoverBoostEnergy() {
 	// 通常ブーストもクイックブーストも使用していない時にエネルギー回復
 	if (!isBoosting_ && !isQuickBoosting_ && currentBoostTime_ < maxBoostTime_) {
-		float recoveryMultiplier = (Length(velocity_) < kVelocityStopThreshold_ * 5.0f) ? kStationaryBoostRecoveryMultiplier_ : 1.0f;
+		float recoveryMultiplier = (Length(velocity_) < PlayerConstant::kVelocityStopThreshold * 5.0f) ? PlayerConstant::kStationaryBoostRecoveryMultiplier : 1.0f;
 		currentBoostTime_ += boostRecoveryRate_ * recoveryMultiplier;
 		if (currentBoostTime_ > maxBoostTime_) {
 			currentBoostTime_ = maxBoostTime_;
@@ -776,7 +776,7 @@ void Player::ShootMachineGun() {
 ///--------------------------------------------------------------
 ///                        反動の適用
 void Player::ApplyRecoil() {
-	if (Length(recoilVelocity_) > kRecoilThreshold_) {
+	if (Length(recoilVelocity_) > PlayerConstant::kRecoilThreshold) {
 		// 反動を適用
 		objectTransform_->transform.translate.x += recoilVelocity_.x;
 		objectTransform_->transform.translate.z += recoilVelocity_.z;
@@ -790,16 +790,16 @@ void Player::ApplyRecoil() {
 ///                        揺れの適用
 void Player::ApplyShake() {
 	if (shakeIntensity_ > 0.01f) { // ある程度の揺れが残っているとき
-		float shakeAmount = shakeIntensity_ * kShakeBaseIntensityFactor_;
+		float shakeAmount = shakeIntensity_ * PlayerConstant::kShakeBaseIntensityFactor;
 
 		// rand() の代わりにC++の<random>を使うことを推奨
-		float offsetX = (static_cast<float>(rand() % kShakeRandRangeX_ - (kShakeRandRangeX_ / 2))) * shakeAmount * kShakeOffsetXFactor_;
-		float offsetRot = (static_cast<float>(rand() % kShakeRandRangeRot_ - (kShakeRandRangeRot_ / 2))) * shakeAmount * kShakeOffsetRotFactor_;
+		float offsetX = (static_cast<float>(rand() % PlayerConstant::kShakeRandRangeX - (PlayerConstant::kShakeRandRangeX / 2))) * shakeAmount * PlayerConstant::kShakeOffsetXFactor;
+		float offsetRot = (static_cast<float>(rand() % PlayerConstant::kShakeRandRangeRot - (PlayerConstant::kShakeRandRangeRot / 2))) * shakeAmount * PlayerConstant::kShakeOffsetRotFactor;
 
 		objectTransform_->transform.translate.x += offsetX;
 		objectTransform_->transform.rotate.y += offsetRot;
 
-		shakeIntensity_ *= kShakeDecayRate_;
+		shakeIntensity_ *= PlayerConstant::kShakeDecayRate;
 	} else {
 		shakeIntensity_ = 0.0f;
 	}
@@ -820,13 +820,14 @@ void Player::CameraShake() {
 		return;
 	}
 
-	if (shakeCurrentTime_ >= kShakeTime_) {
+	if (shakeCurrentTime_ >= PlayerConstant::kShakeTime) {
 		isCameraShaking_ = false;
 		return;
 	}
 
 	// positionの設定
-	std::uniform_real_distribution<float> distribution(-kShakeMagnitude_, kShakeMagnitude_);
+	std::uniform_real_distribution<float> distribution(-PlayerConstant::kShakeMagnitude, PlayerConstant::kShakeMagnitude);
+
 	Vector3 randomTranslate = {distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)};
 
 	followCamera_->GetViewProjection().transform.translate += randomTranslate;
@@ -839,11 +840,11 @@ void Player::CameraShake() {
 ///                        ドアの開閉処理
 void Player::OpenDoor() {
 	if (isDoorOpening_) {
-		doorAngle_ += kDoorOpenCloseSpeed_;
-		if (doorAngle_ >= kDoorOpenAngle_) {
-			doorAngle_ = kDoorOpenAngle_;
+		doorAngle_ += PlayerConstant::kDoorOpenCloseSpeed;
+		if (doorAngle_ >= PlayerConstant::kDoorOpenAngle) {
+			doorAngle_ = PlayerConstant::kDoorOpenAngle;
 			isDoorOpening_ = false;
-			doorOpenTimer_ = kDoorStayOpenFrames_;
+			doorOpenTimer_ = PlayerConstant::kDoorStayOpenFrames;
 		}
 	} else if (doorOpenTimer_ > 0) {
 		doorOpenTimer_--;
@@ -851,9 +852,9 @@ void Player::OpenDoor() {
 			isDoorClosing_ = true;
 		}
 	} else if (isDoorClosing_) {
-		doorAngle_ -= kDoorOpenCloseSpeed_;
-		if (doorAngle_ <= kDoorCloseAngle_) {
-			doorAngle_ = kDoorCloseAngle_;
+		doorAngle_ -= PlayerConstant::kDoorOpenCloseSpeed;
+		if (doorAngle_ <= PlayerConstant::kDoorCloseAngle) {
+			doorAngle_ = PlayerConstant::kDoorCloseAngle;
 			isDoorClosing_ = false;
 		}
 	}
@@ -897,8 +898,8 @@ void Player::HandleDamageAndInvincibility() {
 	if (!isInvincible_) {
 		hp_--;
 		isInvincible_ = true;
-		invincibleTimer_ = kInvincibleDuration_; // 定数使用
-		isVisible_ = true;						 // 無敵開始時は必ず表示
+		invincibleTimer_ = PlayerConstant::kInvincibleDuration; // 定数使用
+		isVisible_ = true;										// 無敵開始時は必ず表示
 	}
 }
 ///--------------------------------------------------------------

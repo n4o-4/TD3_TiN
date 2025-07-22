@@ -4,6 +4,7 @@
 #include "Kouro.h"
 #include "LockOn.h"
 #include "MyMath.h"
+#include "PlayerConstant.h"	  // 追加
 #include "PlayerMachineGun.h" // プレイヤーのマシンガン
 #include "PlayerMissile.h"
 #include "memory"
@@ -217,7 +218,7 @@ public:
 	}
 	/// @brief マシンガン発射間隔取得
 	static int GetMachineGunFireInterval() {
-		return kMachineGunFireInterval_;
+		return PlayerConstant::kMachineGunFireInterval;
 	}
 
 	/// @brief ミサイルクールダウン取得
@@ -377,71 +378,14 @@ private:
 	//==============================================================================
 	// ドア開閉制御用
 	//==============================================================================
-	bool isDoorOpening_ = false;			 // ドア開放中
-	bool isDoorClosing_ = false;			 // ドア閉鎖中
-	float doorAngle_ = 0.0f;				 // ドア角度
-	const float kDoorOpenAngle_ = 3.0f;		 // ドア開放角度
-	const float kDoorCloseAngle_ = 0.0f;	 // ドア閉鎖角度
-	const float kDoorOpenCloseSpeed_ = 0.2f; // 補間速度
-	int doorOpenTimer_ = 0;					 // ドア開放タイマー
-	const int kDoorStayOpenFrames_ = 60;	 // 開いてから閉じるまでの時間
-
-	// 初期化関連
-	const float kInitialZ_ = 3.0f;			  // 初期Z座標
-	const int kExplosionParticleCount_ = 10;  // 爆発パーティクル数
-	const float kExplosionFrequency_ = 0.04f; // 爆発頻度
-	const float kExplosionLifeTime_ = 0.01f;  // 爆発ライフタイム
-
-	// 回転関連
-	const float kBoostSpinSpeed_ = 0.4f;	  // ブーストスピン速度
-	const float kTwoPI_ = 2.0f * 3.14159265f; // 2π
-	const int kBoostSpinMaxFrames_ = 16;	  // ブーストスピン最大フレーム
-	const float kRotationLerpFactor_ = 0.35f; // 回転補間係数
-
-	// 無敵時間関連
-	const int kInvincibleBlinkInterval_ = 10; // 無敵時点滅間隔
-	const int kInvincibleDuration_ = 60 * 4;  // 無敵時間（4秒間、60FPS換算）
-
-	// 移動関連
-	const float kVelocityStopThreshold_ = 0.01f; // 速度停止閾値
-	const float kPostBoostSlowdownRate_ = 0.95f; // ブースト後減速率
-
-	// ジャンプ関連
-	const float kJumpInitialVelocity_ = 0.6f; // ジャンプ初期速度
-	const float kJumpVelocityDecay_ = 0.005f; // ジャンプ速度減衰
-	const float kFloatJumpVelocity_ = 0.2f;	  // 浮遊ジャンプ速度
-
-	// ブースト関連
-	const float kPreciseLockDirectionFactor_ = 0.7f;		// 精密ロック方向係数
-	const float kPreciseLockVerticalFactor_ = 0.3f;			// 精密ロック垂直係数
-	const float kPreciseLockInitialSpeed_ = 0.35f;			// 精密ロック初期速度
-	const float kSimpleLockDirectionFactor_ = 0.3f;			// 簡易ロック方向係数
-	const float kSimpleLockVerticalFactor_ = 0.7f;			// 簡易ロック垂直係数
-	const float kSimpleLockInitialSpeed_ = 0.25f;			// 簡易ロック初期速度
-	const float kQuickBoostSpeedMultiplier_ = 4.0f;			// クイックブースト速度倍率
-	const float kQuickBoostSpeedRetainFactor_ = 0.8f;		// クイックブースト速度保持係数
-	const float kStationaryBoostRecoveryMultiplier_ = 2.0f; // 静止時ブースト回復倍率
-
-	const float kRecoilThreshold_ = 0.001f; // 反動閾値
-	const float kShakeDecayRate_ = 0.92f;	// 揺れ減衰率
-
-	// Player.cppから移動した定数
-	static constexpr float kMovementFrictionThreshold_ = 0.1f; // 移動摩擦閾値
-	static constexpr float kMovementTiltFactor_ = -0.1f;	   // 移動傾き係数
-	static constexpr float kMovementMaxTilt_ = 0.5f;		   // 移動最大傾き
-	static constexpr float kMovementTiltLerpFactor_ = 0.2f;	   // 移動傾き補間係数
-	static constexpr int kMachineGunFireInterval_ = 5;		   // マシンガン発射間隔
-	static constexpr float kShakeBaseIntensityFactor_ = 0.1f;  // 揺れ基本強度係数
-	static constexpr float kShakeOffsetXFactor_ = 0.02f;	   // 揺れオフセットX係数
-	static constexpr float kShakeOffsetRotFactor_ = 0.002f;	   // 揺れオフセット回転係数
-	static constexpr int kShakeRandRangeX_ = 80;			   // 揺れランダム範囲X
-	static constexpr int kShakeRandRangeRot_ = 200;			   // 揺れランダム範囲回転
+	bool isDoorOpening_ = false; // ドア開放中
+	bool isDoorClosing_ = false; // ドア閉鎖中
+	float doorAngle_ = 0.0f;	 // ドア角度
+	int doorOpenTimer_ = 0;		 // ドア開放タイマー
 
 	// カメラシェイク用変数
-	static constexpr float kShakeTime_ = 0.1f;		// シェイクの時間
-	float shakeCurrentTime_ = 0.0f;					// シェイクの経過時間
-	static constexpr float kShakeMagnitude_ = 0.3f; // シェイクの大きさ
-	bool isCameraShaking_ = false;					// カメラシェイク中かどうか
+	float shakeCurrentTime_ = 0.0f; // シェイクの経過時間
+	bool isCameraShaking_ = false;	// カメラシェイク中かどうか
 
 	std::mt19937 randomEngine; // 乱数エンジン
 

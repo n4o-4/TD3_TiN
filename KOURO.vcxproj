@@ -104,6 +104,8 @@
     <ClInclude Include="application\collision\BaseObject.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\collision\CollisionManager.h" />
+    <ClInclude Include="application\object\Player.h" />
+    <ClInclude Include="application\object\PlayerConstant.h" />
     <ClInclude Include="application\object\PlayerMissile.h" />
     <ClInclude Include="application\scene\AbstractSceneFactory.h" />
     <ClInclude Include="application\scene\BaseScene.h" />
@@ -166,7 +168,6 @@
     <ClInclude Include="application\scene\MiyaScene.h" />
     <ClInclude Include="application\object\Ground.h" />
     <ClInclude Include="application\object\SkyDome.h" />
-    <ClInclude Include="application\object\Player.h" />
     <ClInclude Include="application\effect\Fade.h" />
     <ClInclude Include="application\camera\FollowCamera.h" />
     <ClInclude Include="application\scene\GameClear.h" />
