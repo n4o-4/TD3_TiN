@@ -62,7 +62,7 @@ private:
     void SpawnEnemyRC(const Vector3& pos, int hp);
     void SpawnEnemyIron(const Vector3& pos, int hp);
     void SpawnEnemyRefrigerator(const Vector3& pos, int hp);
-    void SpawnEnemyChair(const Vector3& pos, int hp);
+    void SpawnEnemyCP(const Vector3& pos, int hp);
     void SpawnEnemyWM(const Vector3& pos, int hp);
     void SpawnSet(const Vector3& pos);
 

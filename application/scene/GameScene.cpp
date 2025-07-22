@@ -232,7 +232,8 @@ void GameScene::Initialize() {
 	pointer->Update();
 	// その他初期値
 	waveDisplayTimer_ = 0;
-	currentWaveImageIndex_ = 0;
+	currentWaveImageIndex_ = 1;
+	waveDisplayTimer_ = waveDisplayDuration_;
 	isGameClear_ = false;
 }
 ///=============================================================================
@@ -517,25 +518,45 @@ void GameScene::PlayUpdate() {
 			lockOnSystem_->SetViewDirection(followCamera->GetForwardDirection());
 		}
 		std::vector<BaseEnemy*> allTargets;
+		// 敵リストから死んだ敵は削除し、生きた敵だけを追加
 		for (const auto& enemy : enemySystem_->GetEnemies()) {
-			allTargets.push_back(enemy.get());
+			if (enemy->GetHp() <= 0) {
+				lockOnSystem_->RemoveLockedEnemy(enemy.get());
+			} else {
+				allTargets.push_back(enemy.get());
+			}
 		}
+
+		// スポーンブロックは死の概念がないので、すべて追加
 		for (const auto& spawn : enemySystem_->GetSpawns()) {
 			allTargets.push_back(spawn.get());
 		}
 
+		// ロックオンの検出と更新
 		lockOnSystem_->DetectEnemiesRaw(allTargets);
 		lockOnSystem_->UpdateRaw(allTargets);
 
 	}
 	
+	hud_->Update();
 
-	// waveの進行
+	// Wave クリア判定
 	if (enemySystem_->GetSpawns().empty() && enemySystem_->IsWaveReady()) {
 		player_->StopMachineGunSound();
 		player_->GetBullets().clear();
 		player_->GetMachineGunBullets().clear();
+
+		// [1] HUD, LockOn, Player 内部参照の削除
+		if (lockOnSystem_) {
+			for (const auto& enemy : enemySystem_->GetEnemies()) {
+				lockOnSystem_->RemoveLockedEnemy(enemy.get());
+			}
+		}
+
+		// [2] 内部リスト clear
 		enemySystem_->ClearAllEnemies();
+
+		// [3] 次の wave
 		waveIndex_++;
 		if (waveIndex_ < DifficultyManager::GetInstance()->GetWaveCount()) {
 			currentWaveImageIndex_ = waveIndex_ + 1;
@@ -760,7 +781,7 @@ void GameScene::PlayDraw() {
 	//========================================
 	// HUD
 	hud_->Draw(cameraManager_->GetActiveCamera()->GetViewProjection());
-	hud_->Update();
+	//hud_->Update();
 	DrawForegroundSprite();
 
 	

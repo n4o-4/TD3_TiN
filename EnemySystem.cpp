@@ -33,8 +33,6 @@ void EnemySystem::SetDifficulty(bool easy, bool normal, bool hard) {
 
 void EnemySystem::ClearAllEnemies() {
     enemies_.clear();
-    spawns_.clear();
-    
 }
 
 // ウェーブデータを読み込む
@@ -56,14 +54,14 @@ void EnemySystem::Update() {
             DelayedSpawnData spawnData = delayedSpawnQueue_.front();
             delayedSpawnQueue_.pop();
 
-            if (spawnData.type == "KUMO") {
+            if (spawnData.type == "RC") {
                 SpawnEnemyRC(spawnData.position, spawnData.hp);
-            } else if (spawnData.type == "BAT") {
+            } else if (spawnData.type == "Iron") {
                 SpawnEnemyIron(spawnData.position, spawnData.hp);
-            } else if (spawnData.type == "BOMB") {
+            } else if (spawnData.type == "Re") {
                 SpawnEnemyRefrigerator(spawnData.position, spawnData.hp);
-            } else if (spawnData.type == "CHAIR") {
-                SpawnEnemyChair(spawnData.position, spawnData.hp);
+            } else if (spawnData.type == "CP") {
+                SpawnEnemyCP(spawnData.position, spawnData.hp);
             } else if (spawnData.type == "WM") {
                 SpawnEnemyWM(spawnData.position, spawnData.hp);
             }
@@ -180,7 +178,7 @@ void EnemySystem::SpawnEnemyRefrigerator(const Vector3& pos, int hp) {
     enemies_.push_back(std::move(enemy));
 }
 
-void EnemySystem::SpawnEnemyChair(const Vector3& pos, int hp) {
+void EnemySystem::SpawnEnemyCP(const Vector3& pos, int hp) {
     auto enemy = std::make_unique<GroundTypeEnemy3>();
     enemy->Initialize();
     enemy->SetPosition(pos);
