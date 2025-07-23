@@ -95,7 +95,6 @@ void Sprite::Update()
 
 void Sprite::Draw()
 {
-
 	// 背景描画のフラグが立っている場合	
 	if (spriteCommon->GetIsDrawBackground())
 	{

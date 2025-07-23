@@ -324,6 +324,13 @@
     </ClCompile>
     <ClCompile Include="DifficultyManager.cpp" />
     <ClCompile Include="EnemySystem.cpp" />
+    <ClCompile Include="UIManager.cpp" />
+    <ClCompile Include="ISceneUI.cpp" />
+    <ClCompile Include="GameUI.cpp" />
+    <ClCompile Include="TitleUI.cpp" />
+    <ClCompile Include="ClearUI.cpp" />
+    <ClCompile Include="OverUI.cpp" />
+    <ClCompile Include="TutorialUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\base\MyGame.h">
@@ -607,6 +614,13 @@
     </ClInclude>
     <ClInclude Include="DifficultyManager.h" />
     <ClInclude Include="EnemySystem.h" />
+    <ClInclude Include="UIManager.h" />
+    <ClInclude Include="ISceneUI.h" />
+    <ClInclude Include="GameUI.h" />
+    <ClInclude Include="TitleUI.h" />
+    <ClInclude Include="ClearUI.h" />
+    <ClInclude Include="OverUI.h" />
+    <ClInclude Include="TutorialUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

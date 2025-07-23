@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "SrvManager.h"
 #include "PostEffect.h"
+#include "UIManager.h"
 
 struct SceneTransitionData {
 	bool easy = false;
@@ -47,6 +48,7 @@ public:
 	// データ配信用の構造体アクセサ
 	SceneTransitionData& GetTransitionData() { return transitionData_; }
 
+	UIManager* GetUIManager() { return uiManager_.get(); }
 
 private:
 
@@ -78,4 +80,6 @@ private:
 	PostEffect* postEffect_ = nullptr;
 	
 	SceneTransitionData transitionData_;
+
+	std::unique_ptr<UIManager> uiManager_ = nullptr;
 };

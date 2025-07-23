@@ -56,6 +56,14 @@ public:
 
 	virtual SrvManager* GetSrvManager() { return srvManager_; }
 
+	Phase GetPhase() const { return phase_; }
+
+	void SetPhase(Phase phase) { phase_ = phase; }
+
+	CameraManager* GetCameraManager() const { return cameraManager_.get(); }
+
+	SceneManager* GetSceneManager() const { return sceneManager_; }
+
 protected:
 
 	virtual void LineDraw();

@@ -21,6 +21,7 @@
     <ClCompile Include="application\scene\SceneManager.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\object\Enemy.cpp" />
+    <ClCompile Include="ClearUI.cpp" />
     <ClCompile Include="DifficultyManager.cpp" />
     <ClCompile Include="EnemySystem.cpp" />
     <ClCompile Include="engine\effect\BaseEffect.cpp" />
@@ -68,6 +69,8 @@
     <ClCompile Include="engine\effect\Gritch.cpp" />
     <ClCompile Include="application\object\GroundTypeEnemy4.cpp" />
     <ClCompile Include="application\object\Hud.cpp" />
+    <ClCompile Include="GameUI.cpp" />
+    <ClCompile Include="ISceneUI.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -99,6 +102,10 @@
     <ClCompile Include="engine\effect\MotionBlur.cpp" />
     <ClCompile Include="application\object\TutorialEnemy.cpp" />
     <ClCompile Include="application\scene\TutorialScene.cpp" />
+    <ClCompile Include="OverUI.cpp" />
+    <ClCompile Include="TitleUI.cpp" />
+    <ClCompile Include="TutorialUI.cpp" />
+    <ClCompile Include="UIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\collision\BaseObject.h" />
@@ -112,6 +119,7 @@
     <ClInclude Include="application\scene\SceneManager.h" />
     <ClInclude Include="application\scene\TitleScene.h" />
     <ClInclude Include="application\object\Enemy.h" />
+    <ClInclude Include="ClearUI.h" />
     <ClInclude Include="DifficultyManager.h" />
     <ClInclude Include="EnemySystem.h" />
     <ClInclude Include="engine\effect\BaseEffect.h" />
@@ -196,6 +204,12 @@
     <ClInclude Include="application\object\Hud.h" />
     <ClInclude Include="application\object\TutorialEnemy.h" />
     <ClInclude Include="application\scene\TutorialScene.h" />
+    <ClInclude Include="GameUI.h" />
+    <ClInclude Include="ISceneUI.h" />
+    <ClInclude Include="OverUI.h" />
+    <ClInclude Include="TitleUI.h" />
+    <ClInclude Include="TutorialUI.h" />
+    <ClInclude Include="UIManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

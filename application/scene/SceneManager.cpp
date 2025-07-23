@@ -20,6 +20,10 @@ void SceneManager::Initialize(DirectXCommon* dxCommon,SrvManager* srvManager, Ca
 	srvManager_ = srvManager;
 
 	camera_ = camera;
+
+	uiManager_ = std::make_unique<UIManager>();
+
+	uiManager_->ChengeScene("TITLE");
 }
 
 void SceneManager::Finalize()
@@ -84,6 +88,8 @@ void SceneManager::Update()
 
 	// 実行中のシーンの更新
 	scene_->Update();
+
+	uiManager_->Update(scene_.get());
 }
 
 void SceneManager::Draw()
@@ -101,4 +107,6 @@ void SceneManager::ChangeScene(const std::string& sceneName)
 
 	// 次のシーン生成
 	nextScene_ = std::move(sceneFactory_->CreateScene(sceneName));
+
+	uiManager_->ChengeScene(sceneName);
 }

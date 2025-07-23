@@ -29,6 +29,8 @@ void BaseScene::Initialize()
 
 	// MagEngine
 	LineManager::GetInstance()->SetDefaultCamera(&cameraManager_->GetActiveCamera()->GetViewProjection());
+
+	sceneManager_->GetUIManager()->Initialize();
 }
 
 void BaseScene::Finalize()
@@ -78,6 +80,8 @@ void BaseScene::DrawForegroundSprite()
 	SpriteCommon::GetInstance()->SetForegroundView();
 
 	SpriteCommon::GetInstance()->DrawForeground();
+
+	sceneManager_->GetUIManager()->Draw();
 }
 
 void BaseScene::DrawFade()
